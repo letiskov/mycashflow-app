@@ -666,3 +666,59 @@ body {
     margin-bottom: 1rem;
     opacity: 0.2;
 }
+/* Wallet Cards */
+.wallet-card {
+    border-radius: 20px;
+    padding: 24px;
+    color: white;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.wallet-card:active {
+    transform: scale(0.98);
+}
+
+.card-logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.card-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-top: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-balance {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 4px 0;
+}
+
+.card-number {
+    margin-top: 16px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 3px;
+    opacity: 0.6;
+}
+
+/* Stats */
+.glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+}
+

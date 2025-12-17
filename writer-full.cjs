@@ -1,4 +1,7 @@
-import './style.css'
+
+const fs = require('fs');
+
+const content = `import './style.css'
 import '@khmyznikov/pwa-install';
 import Chart from 'chart.js/auto'
 
@@ -105,7 +108,7 @@ async function deleteTrx(id) {
         const old = [...transactions];
         transactions = transactions.filter(t => String(t.id) !== String(id));
         render();
-        try { await fetch(`${API_URL}?id=${id}`, { method: 'DELETE' }); }
+        try { await fetch(\`\${API_URL}?id=\${id}\`, { method: 'DELETE' }); }
         catch { transactions = old; render(); alert('Failed delete online'); }
     }
 }
@@ -144,18 +147,18 @@ function render() {
         if(statsList) {
             statsList.innerHTML = Object.entries(cats).map(([cat, amount]) => {
                 const pct = ((amount / expenseTotal) * 100).toFixed(0);
-                return `
+                return \`
                     <div class="glass-card stat-row">
                         <div class="stat-cat">
                             <div class="stat-color" style="background: #FF453A"></div>
-                            <span>${cat}</span>
+                            <span>\${cat}</span>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:600">${formatCurrency(amount)}</div>
-                            <div style="font-size:0.8rem; opacity:0.6">${pct}%</div>
+                            <div style="font-weight:600">\${formatCurrency(amount)}</div>
+                            <div style="font-size:0.8rem; opacity:0.6">\${pct}%</div>
                         </div>
                     </div>
-                `;
+                \`;
             }).join('');
         }
     }
@@ -169,21 +172,21 @@ function render() {
         }
         list.innerHTML = transactions.map((t, i) => {
              const isExp = t.amount < 0;
-             return `
-            <div class="trx-item" onclick="deleteTrx('${t.id}')" style="--i: ${i}">
+             return \`
+            <div class="trx-item" onclick="deleteTrx('\${t.id}')" style="--i: \${i}">
                 <div class="trx-left">
-                    <div class="trx-icon" style="color: ${isExp ? '#FF9F0A' : '#30D158'}"><i class="${getIcon(t.category)}"></i></div>
+                    <div class="trx-icon" style="color: \${isExp ? '#FF9F0A' : '#30D158'}"><i class="\${getIcon(t.category)}"></i></div>
                     <div class="trx-info">
-                        <h4>${t.title}</h4>
+                        <h4>\${t.title}</h4>
                         <div style="display:flex; gap: 8px; align-items: center;">
-                            <p>${t.category}</p>
+                            <p>\${t.category}</p>
                             <p>•</p>
-                            <p>${new Date(t.date).toLocaleDateString()}</p>
+                            <p>\${new Date(t.date).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>
-                <div class="trx-amount" style="color: ${isExp ? '#fff' : '#30D158'}">${formatCurrency(t.amount)}</div>
-            </div>`;
+                <div class="trx-amount" style="color: \${isExp ? '#fff' : '#30D158'}">\${formatCurrency(t.amount)}</div>
+            </div>\`;
         }).join('');
     }
 }
@@ -248,3 +251,6 @@ document.getElementById('trxForm')?.addEventListener('submit', async (e) => {
 });
 
 loadData();
+`;
+
+fs.writeFileSync('main.js', content, 'utf8');

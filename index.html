@@ -101,10 +101,16 @@
       <header class="mobile-header" style="position: sticky; top: 0;">
         <h3>Statistics</h3>
       </header>
-      <div class="placeholder-view">
-        <i class="ri-pie-chart-2-line"></i>
-        <h3>Detailed Stats</h3>
-        <p>Coming soon in next update</p>
+      <div style="padding: 20px;">
+        <div class="glass-card" style="padding: 20px; text-align: center; margin-bottom: 20px;">
+          <h4 style="margin-bottom:15px; color:var(--text-secondary);">Expenses by Category</h4>
+          <div style="height: 250px; position: relative;">
+            <canvas id="expenseChart"></canvas>
+          </div>
+        </div>
+        <div id="statsList" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- JS will populate -->
+        </div>
       </div>
     </div>
 
@@ -113,10 +119,39 @@
       <header class="mobile-header" style="position: sticky; top: 0;">
         <h3>My Wallet</h3>
       </header>
-      <div class="placeholder-view">
-        <i class="ri-wallet-3-line"></i>
-        <h3>Wallet Management</h3>
-        <p>Manage cards and accounts</p>
+
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+        <!-- BCA Card -->
+        <div class="wallet-card" style="background: linear-gradient(135deg, #10439F, #001F5C);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-logo">BCA</span>
+            <i class="ri-visa-line card-icon"></i>
+          </div>
+          <div class="card-label">Balance</div>
+          <div class="card-balance">Rp 15.200.000</div>
+          <div class="card-number">**** 4432</div>
+        </div>
+
+        <!-- Gopay Card -->
+        <div class="wallet-card" style="background: linear-gradient(135deg, #00ADD6, #007A99);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-logo">Gopay</span>
+            <i class="ri-smartphone-line card-icon"></i>
+          </div>
+          <div class="card-label">Balance</div>
+          <div class="card-balance">Rp 450.000</div>
+          <div class="card-number">0812 **** 8888</div>
+        </div>
+
+        <!-- Cash Card -->
+        <div class="wallet-card" style="background: linear-gradient(135deg, #34C759, #248A3D);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-logo">Cash</span>
+            <i class="ri-money-dollar-circle-line card-icon"></i>
+          </div>
+          <div class="card-label">On Hand</div>
+          <div class="card-balance">Rp 1.500.000</div>
+        </div>
       </div>
     </div>
 
