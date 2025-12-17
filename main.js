@@ -186,30 +186,8 @@ navItems.forEach(item => {
     });
 });
 
-// --- iOS Install Detection ---
-function isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-}
-
-function isInStandaloneMode() {
-    return ('standalone' in window.navigator) && (window.navigator.standalone);
-}
-
-if (isIOS() && !isInStandaloneMode()) {
-    const prompt = document.getElementById('installPrompt');
-    const closeStartBtn = document.getElementById('closeInstallBtn');
-
-    if (prompt) {
-        setTimeout(() => {
-            prompt.classList.add('visible');
-        }, 2000);
-
-        if (closeStartBtn) {
-            closeStartBtn.addEventListener('click', () => {
-                prompt.classList.remove('visible');
-            });
-        }
-    }
-}
+// --- iOS Install Detection Removed ---
+// User found it confusing, so we removed the overlay.
+// Users can still install manually via Safari Share > Add to Home Screen.
 
 render();
