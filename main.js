@@ -108,6 +108,14 @@ function renderBalance() {
     if (elIncUsd) elIncUsd.textContent = fmt(incomes.USD, 'USD');
     if (elExpIdr) elExpIdr.textContent = fmt(expenses.IDR, 'IDR');
     if (elExpUsd) elExpUsd.textContent = fmt(expenses.USD, 'USD');
+
+    // 4. Overall Balancing (Net worth across both currencies)
+    const elNet = document.getElementById('total-net-worth');
+    if (elNet) {
+        // Simple conversion for display (using 1 USD = 16.000 IDR as a rough guide)
+        const netInIdr = totals.IDR + (totals.USD * 16000);
+        elNet.textContent = 'Approx. ' + fmt(netInIdr, 'IDR');
+    }
 }
 
 function renderTransactions() {
