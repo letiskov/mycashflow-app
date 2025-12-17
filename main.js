@@ -76,23 +76,38 @@ function renderAll() {
 }
 
 function renderBalance() {
+    // 1. Calculate Actual Banking Balance (From Wallets)
     let totals = { IDR: 0, USD: 0 };
+    state.wallets.forEach(w => {
+        const cur = w.currency || 'IDR';
+        totals[cur] += parseFloat(w.balance || 0);
+    });
+
+    // 2. Calculate Transaction Summary (Income/Expense)
     let incomes = { IDR: 0, USD: 0 };
     let expenses = { IDR: 0, USD: 0 };
-
     state.transactions.forEach(t => {
-        const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || state.wallets[0] || { currency: 'IDR' };
+        const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || { currency: 'IDR' };
         const cur = wallet.currency || 'IDR';
         if (t.amount > 0) incomes[cur] += t.amount;
         else expenses[cur] += Math.abs(t.amount);
-        totals[cur] += t.amount;
     });
 
+    // 3. Render to UI
     const elIdr = document.getElementById('balance-idr');
     const elUsd = document.getElementById('balance-usd');
+    const elIncIdr = document.getElementById('total-income-idr');
+    const elIncUsd = document.getElementById('total-income-usd');
+    const elExpIdr = document.getElementById('total-expense-idr');
+    const elExpUsd = document.getElementById('total-expense-usd');
 
     if (elIdr) elIdr.textContent = fmt(totals.IDR, 'IDR');
     if (elUsd) elUsd.textContent = fmt(totals.USD, 'USD');
+
+    if (elIncIdr) elIncIdr.textContent = fmt(incomes.IDR, 'IDR');
+    if (elIncUsd) elIncUsd.textContent = fmt(incomes.USD, 'USD');
+    if (elExpIdr) elExpIdr.textContent = fmt(expenses.IDR, 'IDR');
+    if (elExpUsd) elExpUsd.textContent = fmt(expenses.USD, 'USD');
 }
 
 function renderTransactions() {
