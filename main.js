@@ -36,7 +36,7 @@ async function initApp() {
     await fetchAllData();
     initCharts();
     renderAll();
-    
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(console.error);
     }
@@ -46,17 +46,17 @@ async function initApp() {
 async function fetchProfiles() {
     try {
         const res = await fetch(API.PROFILE);
-        if(res.ok) {
+        if (res.ok) {
             state.profiles = await res.json();
             renderProfileMenu();
         }
-    } catch(e) {}
+    } catch (e) { }
 }
 
 async function fetchAllData() {
     try {
         const headers = { 'x-profile-id': state.currentProfileId };
-        
+
         const [trxRes, walletRes, catRes] = await Promise.allSettled([
             fetch(API.TRX, { headers, cache: 'no-store' }),
             fetch(API.WALLET, { headers }),
@@ -65,7 +65,7 @@ async function fetchAllData() {
 
         if (trxRes.status === 'fulfilled' && trxRes.value.ok) {
             const raw = await trxRes.value.json();
-            state.transactions = raw.map(t => ({...t, amount: parseFloat(t.amount)}));
+            state.transactions = raw.map(t => ({ ...t, amount: parseFloat(t.amount) }));
         }
 
         if (walletRes.status === 'fulfilled' && walletRes.value.ok) {
@@ -76,7 +76,7 @@ async function fetchAllData() {
             state.categories = await catRes.value.json();
             populateCategoryDropdown();
         }
-        
+
     } catch (err) {
         console.error('Fetch Error:', err);
     }
@@ -94,21 +94,21 @@ function renderAll() {
 
 function updateHeader() {
     const active = state.profiles.find(p => String(p.id) === String(state.currentProfileId));
-    if(active) {
+    if (active) {
         const welcome = document.querySelector('.welcome h3');
-        if(welcome) welcome.textContent = 'Mode: ' + active.name;
-        
+        if (welcome) welcome.textContent = 'Mode: ' + active.name;
+
         const avatar = document.querySelector('.avatar img');
-        if(avatar) avatar.src = active.avatar;
+        if (avatar) avatar.src = active.avatar;
     }
 }
 
 function renderProfileMenu() {
     const container = document.querySelector('.profile-content');
-    if(!container) return;
+    if (!container) return;
 
     const active = state.profiles.find(p => String(p.id) === String(state.currentProfileId));
-    
+
     container.innerHTML = `
         <div class="glass-card user-info-card" style="margin-bottom: 30px;">
             <img src="${active?.avatar || ''}" alt="Avatar">
@@ -142,14 +142,14 @@ function renderProfileMenu() {
 window.switchProfile = async (id) => {
     state.currentProfileId = id;
     localStorage.setItem('activeProfileId', id);
-    
+
     // Smooth transition
     document.getElementById('app').style.opacity = '0.5';
     await fetchAllData();
     renderAll();
     renderProfileMenu();
     document.getElementById('app').style.opacity = '1';
-    
+
     // Switch back to home
     switchTab('home');
 };
@@ -180,7 +180,7 @@ function renderBalance() {
 
     if (elIdr) elIdr.textContent = fmt(totals.IDR, 'IDR');
     if (elUsd) elUsd.textContent = fmt(totals.USD, 'USD');
-    
+
     if (elIncIdr) elIncIdr.textContent = fmt(incomes.IDR, 'IDR');
     if (elIncUsd) elIncUsd.textContent = fmt(incomes.USD, 'USD');
     if (elExpIdr) elExpIdr.textContent = fmt(expenses.IDR, 'IDR');
@@ -205,7 +205,7 @@ function renderTransactions() {
     list.innerHTML = state.transactions.slice(0, 10).map((t, idx) => {
         const isExp = t.amount < 0;
         const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || { currency: 'IDR' };
-        
+
         return `
             <div class="trx-item" style="--i: ${idx}" data-id="${t.id}">
                 <div class="trx-left">
@@ -270,9 +270,9 @@ function renderStats() {
     state.transactions.forEach(t => {
         const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || { currency: 'IDR' };
         const cur = wallet.currency;
-        if(!data[cur]) data[cur] = {};
+        if (!data[cur]) data[cur] = {};
         if (!data[cur][t.category]) data[cur][t.category] = { income: 0, expense: 0, total: 0 };
-        
+
         const amt = Math.abs(t.amount);
         if (t.amount > 0) data[cur][t.category].income += amt;
         else data[cur][t.category].expense += amt;
@@ -285,7 +285,7 @@ function renderStats() {
         if (totalCurrencyVolume === 0) return;
 
         html += `<h4 style="margin: 20px 0 10px; color: var(--primary-color)">${cur} Breakdown</h4>`;
-        
+
         Object.entries(cats)
             .sort((a, b) => b[1].total - a[1].total)
             .forEach(([name, vals]) => {
@@ -360,7 +360,7 @@ function setupInputFormatting() {
     amountInput.setAttribute('inputmode', 'numeric');
     amountInput.addEventListener('input', (e) => {
         let value = e.target.value.replace(/[^0-9]/g, '');
-        if (value) value = parseInt(value).toLocaleString('id-ID'); 
+        if (value) value = parseInt(value).toLocaleString('id-ID');
         e.target.value = value;
     });
 
@@ -381,9 +381,9 @@ function switchTab(tabId) {
     state.activeTab = tabId;
     document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tabId));
     document.querySelectorAll('.view-section').forEach(v => v.classList.toggle('active-view', v.id === `${tabId}-view`));
-    
+
     if (tabId === 'profile') renderProfileMenu();
-    
+
     if (tabId === 'stats' && charts.expense) charts.expense.resize();
     if (tabId === 'home' && charts.main) charts.main.resize();
 }
@@ -417,7 +417,7 @@ async function saveTransaction() {
     const title = document.getElementById('trxTitle').value;
     const catName = document.getElementById('trxCategory').value;
     const walletId = document.getElementById('trxWallet').value;
-    
+
     const catObj = state.categories.find(c => c.name === catName);
     const finalAmt = (catObj && catObj.type === 'income') ? Math.abs(amt) : -Math.abs(amt);
 
@@ -473,7 +473,7 @@ async function saveWalletEdit() {
 
 async function deleteTransaction(id) {
     try {
-        const res = await fetch(`${API.TRX}?id=${id}`, { 
+        const res = await fetch(`${API.TRX}?id=${id}`, {
             method: 'DELETE',
             headers: { 'x-profile-id': state.currentProfileId }
         });
@@ -488,9 +488,9 @@ async function deleteTransaction(id) {
 
 // --- 8. UTILS & CHARTS ---
 function fmt(num, currency = 'IDR') {
-    const options = { 
-        style: 'currency', 
-        currency: currency, 
+    const options = {
+        style: 'currency',
+        currency: currency,
         maximumFractionDigits: currency === 'IDR' ? 0 : 2
     };
     return new Intl.NumberFormat(currency === 'IDR' ? 'id-ID' : 'en-US', options).format(num);
@@ -508,7 +508,7 @@ function getCategoryIcon(catName) {
 function populateCategoryDropdown() {
     const select = document.getElementById('trxCategory');
     if (!select) return;
-    select.innerHTML = state.categories.map(c => 
+    select.innerHTML = state.categories.map(c =>
         `<option value="${c.name}">${c.type === 'income' ? '💰' : '💸'} ${c.name}</option>`
     ).join('');
 }
@@ -522,7 +522,7 @@ function initCharts() {
                 labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 datasets: [{
                     label: 'Income',
-                    data: [0,0,0,0,0,0,0],
+                    data: [0, 0, 0, 0, 0, 0, 0],
                     borderColor: '#30D158',
                     backgroundColor: 'rgba(48, 209, 88, 0.1)',
                     fill: true,
@@ -561,6 +561,31 @@ function initCharts() {
 }
 
 function updateCharts() {
+    if (charts.main) {
+        // Last 7 days aggregation
+        const labels = [];
+        const data = [];
+        const now = new Date();
+
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(now.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+
+            const dayIncome = state.transactions
+                .filter(t => t.date.startsWith(dateStr) && t.amount > 0)
+                .reduce((acc, t) => acc + t.amount, 0);
+
+            labels.push(dayName);
+            data.push(dayIncome);
+        }
+
+        charts.main.data.labels = labels;
+        charts.main.data.datasets[0].data = data;
+        charts.main.update();
+    }
+
     if (charts.expense) {
         const cats = {};
         state.transactions.forEach(t => {

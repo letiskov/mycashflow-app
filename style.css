@@ -664,19 +664,57 @@ input:focus {
 .cat-value small {
     color: var(--text-secondary);
 }
-/* Dual Balance Layout */
+
+/* Dual Balance Layout Refined */
 .dual-balance {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 25px;
 }
-.balance-item h1 {
-    font-size: 1.8rem !important;
-    margin-bottom: 0 !important;
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-.text-right {
+
+.balance-item p {
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px !important;
+}
+
+.balance-item h1 {
+    font-size: 2rem !important;
+    font-weight: 700;
+    margin-bottom: 0 !important;
+    line-height: 1;
+}
+
+.balance-item.text-right {
     text-align: right;
+}
+
+.net-worth-box {
+    text-align: center;
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.net-worth-box p {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.net-worth-box h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
 }
 
 
@@ -686,4 +724,3 @@ input:focus {
     opacity: 0.7;
     font-weight: 400 !important;
 }
-
