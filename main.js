@@ -90,18 +90,9 @@ function renderBalance() {
 
     const elIdr = document.getElementById('balance-idr');
     const elUsd = document.getElementById('balance-usd');
-    const elIncIdr = document.getElementById('total-income-idr');
-    const elIncUsd = document.getElementById('total-income-usd');
-    const elExpIdr = document.getElementById('total-expense-idr');
-    const elExpUsd = document.getElementById('total-expense-usd');
 
     if (elIdr) elIdr.textContent = fmt(totals.IDR, 'IDR');
     if (elUsd) elUsd.textContent = fmt(totals.USD, 'USD');
-
-    if (elIncIdr) elIncIdr.textContent = fmt(incomes.IDR, 'IDR');
-    if (elIncUsd) elIncUsd.textContent = fmt(incomes.USD, 'USD');
-    if (elExpIdr) elExpIdr.textContent = fmt(expenses.IDR, 'IDR');
-    if (elExpUsd) elExpUsd.textContent = fmt(expenses.USD, 'USD');
 }
 
 function renderTransactions() {
