@@ -189,7 +189,7 @@ function renderBalance() {
     const elNet = document.getElementById('total-net-worth');
     if (elNet) {
         const netInIdr = totals.IDR + (totals.USD * 16000);
-        elNet.textContent = 'Approx. ' + fmt(netInIdr, 'IDR');
+        elNet.textContent = fmt(netInIdr, 'IDR');
     }
 }
 
