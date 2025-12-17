@@ -186,7 +186,29 @@
       </a>
     </nav>
 
-    <!-- iOS Install Prompt Removed -->
+    <!-- GitHub Library: pwa-install -->
+    <pwa-install id="pwa-install" name="MyCashFlow" icon="/icon-192.png" manifest-url="/manifest.json"
+      manual-apple="true">
+    </pwa-install>
+
+    <script>
+      // Force show instructions on iOS if not installed
+      window.addEventListener('load', () => {
+        const pwaInstall = document.getElementById('pwa-install');
+        // Check if iOS and not standalone
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.navigator.standalone;
+
+        if (isIOS && !isStandalone) {
+          // Show the prompt (library handles the UI)
+          setTimeout(() => {
+            if (pwaInstall && pwaInstall.showDialog) {
+              pwaInstall.showDialog(true);
+            }
+          }, 3000);
+        }
+      });
+    </script>
   </div>
   <script type="module" src="/main.js"></script>
 </body>

@@ -1,9 +1,10 @@
 import './style.css'
+import '@khmyznikov/pwa-install';
 import Chart from 'chart.js/auto'
 
 // --- State Management (Online) ---
 let transactions = [];
-const API_URL = '/api/transactions'; 
+const API_URL = '/api/transactions';
 
 // --- Service Worker ---
 if ('serviceWorker' in navigator) {
@@ -17,12 +18,12 @@ Chart.defaults.color = '#94a3b8';
 Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
 Chart.defaults.font.family = "-apple-system, 'SF Pro Display', sans-serif";
 
-let cashflowChart; 
+let cashflowChart;
 
 function initChart() {
     const canvas = document.getElementById('cashflowChart');
-    if(!canvas) return;
-    
+    if (!canvas) return;
+
     const trendCtx = canvas.getContext('2d');
     cashflowChart = new Chart(trendCtx, {
         type: 'bar',
@@ -55,13 +56,13 @@ async function loadData() {
     try {
         // Prevent caching
         const res = await fetch(API_URL, { cache: "no-store" });
-        if(!res.ok) {
+        if (!res.ok) {
             const text = await res.text();
             throw new Error('Server Error: ' + text);
         }
         const data = await res.json();
         console.log('Data loaded:', data);
-        
+
         transactions = data.map(t => ({
             ...t,
             amount: parseFloat(t.amount),
@@ -73,7 +74,7 @@ async function loadData() {
         console.error('Failed to load:', err);
         // Show indicator to user
         const list = document.getElementById('transactionList');
-        if(list) list.innerHTML = `<div style="color:red; text-align:center; padding:20px;">
+        if (list) list.innerHTML = `<div style="color:red; text-align:center; padding:20px;">
            Offline or Server Error.<br><small>${err.message}</small>
         </div>`;
     }
@@ -102,7 +103,7 @@ async function deleteTrx(id) {
 
         try {
             await fetch(`${API_URL}?id=${id}`, { method: 'DELETE' });
-        } catch(err) {
+        } catch (err) {
             alert('Failed to delete online');
             transactions = oldData;
             render();
@@ -119,13 +120,13 @@ function render() {
 
     // 2. Update UI
     const balanceEl = document.querySelector('.balance-amount');
-    if(balanceEl) balanceEl.textContent = formatCurrency(total);
-    
+    if (balanceEl) balanceEl.textContent = formatCurrency(total);
+
     const incomeEl = document.querySelector('.stat.up span');
-    if(incomeEl) incomeEl.textContent = `+${(income / 1000000).toFixed(1)}jt Income`;
-    
+    if (incomeEl) incomeEl.textContent = `+${(income / 1000000).toFixed(1)}jt Income`;
+
     const expenseEl = document.querySelector('.stat.down span');
-    if(expenseEl) expenseEl.textContent = `-${(expense / 1000000).toFixed(1)}jt Expense`;
+    if (expenseEl) expenseEl.textContent = `-${(expense / 1000000).toFixed(1)}jt Expense`;
 
     // 3. Update Chart
     if (cashflowChart) {
@@ -135,8 +136,8 @@ function render() {
 
     // 4. Update List
     const list = document.getElementById('transactionList');
-    if(list) {
-        if(transactions.length === 0) {
+    if (list) {
+        if (transactions.length === 0) {
             list.innerHTML = '<p style="text-align:center; color: #888; padding: 2rem;">No transactions yet.</p>';
             return;
         }
@@ -145,7 +146,7 @@ function render() {
             const isExp = t.amount < 0;
             const color = isExp ? '#fff' : '#30D158';
             const iconColor = t.category === 'Income' ? '#30D158' : '#FF9F0A';
-            
+
             return `
         <div class="trx-item" onclick="deleteTrx('${t.id}')" style="--i: ${index}">
         <div class="trx-left">
@@ -174,10 +175,10 @@ const fab = document.querySelector('.nav-fab');
 const closeBtn = document.getElementById('closeModal');
 const form = document.getElementById('trxForm');
 
-if(fab) fab.addEventListener('click', () => modal.classList.add('active'));
-if(closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+if (fab) fab.addEventListener('click', () => modal.classList.add('active'));
+if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
 
-if(form) form.addEventListener('submit', async (e) => {
+if (form) form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
@@ -194,7 +195,7 @@ if(form) form.addEventListener('submit', async (e) => {
     }
 
     const newTrx = {
-        id: Date.now(), 
+        id: Date.now(),
         title,
         amount: finalAmount,
         category,
@@ -207,8 +208,8 @@ if(form) form.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newTrx)
         });
-        
-        if(res.ok) {
+
+        if (res.ok) {
             const savedTrx = await res.json();
             savedTrx.amount = parseFloat(savedTrx.amount);
             savedTrx.id = String(savedTrx.id);
@@ -217,10 +218,10 @@ if(form) form.addEventListener('submit', async (e) => {
             form.reset();
             modal.classList.remove('active');
         } else {
-             const errText = await res.text();
-             alert('Server Error: ' + errText);
+            const errText = await res.text();
+            alert('Server Error: ' + errText);
         }
-    } catch(err) {
+    } catch (err) {
         alert('Connection Error: ' + err.message);
     } finally {
         submitBtn.textContent = originalText;
@@ -241,7 +242,7 @@ navItems.forEach(item => {
         views.forEach(view => view.classList.remove('active-view'));
         const targetView = document.getElementById(`${tabId}-view`);
         if (targetView) targetView.classList.add('active-view');
-        if(tabId === 'home' && cashflowChart) cashflowChart.update(); 
+        if (tabId === 'home' && cashflowChart) cashflowChart.update();
     });
 });
 
