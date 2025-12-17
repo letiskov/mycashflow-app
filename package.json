@@ -1,0 +1,33 @@
+{
+  "name": "summary-dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron-main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "npm run build && electron .",
+    "build:exe": "npm run build && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.mycashflow.app",
+    "productName": "MyCashFlow",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "dist/vite.svg"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  }
+}

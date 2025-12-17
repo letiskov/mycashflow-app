@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="/manifest.json">
+  <title>MyCashFlow</title>
+
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <!-- Top Bar -->
+    <header class="mobile-header">
+      <div class="header-left">
+        <div class="avatar">me</div>
+        <div class="greeting">
+          <span class="sub">Welcome back,</span>
+          <span class="name">Kons</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn"><i class="ri-notification-3-line"></i></button>
+      </div>
+    </header>
+
+    <!-- Scrollable Content -->
+    <main class="content-area">
+      <!-- Balance Card -->
+      <section class="balance-card">
+        <div class="balance-label">Total Balance</div>
+        <div class="balance-amount">Rp 45.250.000</div>
+        <div class="balance-stats">
+          <div class="stat up">
+            <i class="ri-arrow-up-circle-fill"></i>
+            <span>+2.5jt Income</span>
+          </div>
+          <div class="stat down">
+            <i class="ri-arrow-down-circle-fill"></i>
+            <span>-1.2jt Expense</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="quick-actions">
+        <button class="action-btn">
+          <div class="icon-box transfer"><i class="ri-exchange-dollar-line"></i></div>
+          <span>Transfer</span>
+        </button>
+        <button class="action-btn">
+          <div class="icon-box bill"><i class="ri-bill-line"></i></div>
+          <span>Bill</span>
+        </button>
+        <button class="action-btn">
+          <div class="icon-box topup"><i class="ri-wallet-3-line"></i></div>
+          <span>Top Up</span>
+        </button>
+        <button class="action-btn">
+          <div class="icon-box more"><i class="ri-grid-fill"></i></div>
+          <span>More</span>
+        </button>
+      </section>
+
+      <!-- Analytics -->
+      <section class="section-title">
+        <h3>Cashflow Trend</h3>
+      </section>
+      <div class="chart-container-mobile">
+        <canvas id="cashflowChart"></canvas>
+      </div>
+
+      <!-- Recent Transactions -->
+      <section class="section-title">
+        <h3>Recent Activity</h3>
+        <a href="#" class="see-all">See All</a>
+      </section>
+      <div class="transaction-list" id="transactionList">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Spacer for Bottom Nav -->
+      <div style="height: 100px;"></div>
+    </main>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal-overlay" id="addModal">
+      <div class="bottom-sheet">
+        <div class="sheet-header">
+          <h3>New Transaction</h3>
+          <button class="close-btn" id="closeModal"><i class="ri-close-line"></i></button>
+        </div>
+        <form id="trxForm" class="trx-form">
+          <div class="form-group">
+            <label>Amount (Rp)</label>
+            <input type="number" id="trxAmount" placeholder="0" required inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="trxTitle" placeholder="e.g. Nasi Goreng" required>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="trxCategory">
+              <option value="Food">🍔 Food</option>
+              <option value="Transport">🚕 Transport</option>
+              <option value="Shopping">🛍️ Shopping</option>
+              <option value="Entertainment">🎬 Entertainment</option>
+              <option value="Income">💰 Income</option>
+            </select>
+          </div>
+          <button type="submit" class="save-btn">Save Transaction</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <a href="#" class="nav-item active" data-tab="home">
+        <i class="ri-home-5-line"></i>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item" data-tab="stats">
+        <i class="ri-pie-chart-2-line"></i>
+        <span>Stats</span>
+      </a>
+      <div class="nav-fab">
+        <i class="ri-add-line"></i>
+      </div>
+      <a href="#" class="nav-item" data-tab="wallet">
+        <i class="ri-wallet-3-line"></i>
+        <span>Wallet</span>
+      </a>
+      <a href="#" class="nav-item" data-tab="profile">
+        <i class="ri-user-3-line"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <!-- iOS Install Prompt Overlay -->
+    <div class="install-prompt" id="installPrompt">
+      <div class="install-icon"><i class="ri-download-cloud-2-line"></i></div>
+      <div class="install-title">Install Application</div>
+      <div class="install-desc">Install MyCashFlow to your iPhone to use it offline and fullscreen.</div>
+
+      <div class="install-steps">
+        <div class="step">
+          <i class="ri-share-box-line"></i>
+          <span>Tap the <b>Share</b> button below</span>
+        </div>
+        <div class="step">
+          <i class="ri-add-box-line"></i>
+          <span>Select <b>Add to Home Screen</b></span>
+        </div>
+      </div>
+
+      <div class="arrow-anim">
+        <i class="ri-arrow-down-line" style="font-size: 2rem;"></i>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>
