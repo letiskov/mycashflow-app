@@ -2,7 +2,7 @@
     "name": "MyCashFlow",
     "short_name": "MyCashFlow",
     "description": "Premium Personal Finance Tracker",
-    "start_url": "./index.html",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
