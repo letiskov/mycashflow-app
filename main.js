@@ -1,338 +1,468 @@
 import './style.css'
-// import '@khmyznikov/pwa-install'; // Comment out temporarily if causing issues
+import '@khmyznikov/pwa-install'
 import Chart from 'chart.js/auto'
 
-// --- Config ---
+// --- 1. CONFIG & STATE ---
 const API = {
     TRX: '/api/transactions',
     WALLET: '/api/wallets',
     CAT: '/api/categories'
 };
 
-// --- State ---
-let transactions = [];
-let wallets = [];
-let categories = [];
+let state = {
+    transactions: [],
+    wallets: [],
+    categories: [],
+    activeTab: 'home'
+};
 
-console.log('App Starting...');
+let charts = {
+    main: null,
+    expense: null
+};
 
-// --- 1. SETUP LISTENERS FIRST (CRITICAL) ---
-function setupListeners() {
-    console.log('Setting up listeners...');
-    
-    // FAB (+) Button
-    const fab = document.querySelector('.nav-fab');
-    if(fab) {
-        fab.onclick = (e) => {
-            e.preventDefault();
-            console.log('FAB Clicked');
-            openTrxModal();
-        };
-    } else {
-        console.error('FAB not found!');
+// --- 2. INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+});
+
+async function initApp() {
+    console.log('App Initializing...');
+
+    // a. Basic Listeners
+    setupGenericListeners();
+
+    // b. Inital Data Fetch
+    await fetchAllData();
+
+    // c. Charts Setup
+    initCharts();
+
+    // d. Initial Render
+    renderAll();
+
+    // e. PWA Helper
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(console.error);
+    }
+}
+
+// --- 3. DATA PERSISTENCE ---
+async function fetchAllData() {
+    try {
+        const [trxRes, walletRes, catRes] = await Promise.allSettled([
+            fetch(API.TRX, { cache: 'no-store' }),
+            fetch(API.WALLET),
+            fetch(API.CAT)
+        ]);
+
+        if (trxRes.status === 'fulfilled' && trxRes.value.ok) {
+            const raw = await trxRes.value.json();
+            state.transactions = raw.map(t => ({ ...t, amount: parseFloat(t.amount) }));
+        }
+
+        if (walletRes.status === 'fulfilled' && walletRes.value.ok) {
+            state.wallets = await walletRes.value.json();
+        }
+
+        if (catRes.status === 'fulfilled' && catRes.value.ok) {
+            state.categories = await catRes.value.json();
+            populateCategoryDropdown();
+        }
+
+    } catch (err) {
+        console.error('Fetch Error:', err);
+    }
+}
+
+// --- 4. RENDERERS ---
+function renderAll() {
+    renderBalance();
+    renderTransactions();
+    renderWallets();
+    renderStats();
+    updateCharts();
+}
+
+function renderBalance() {
+    const inc = state.transactions.filter(t => t.amount > 0).reduce((a, b) => a + b.amount, 0);
+    const exp = state.transactions.filter(t => t.amount < 0).reduce((a, b) => a + Math.abs(b.amount), 0);
+    const total = inc - exp;
+
+    const elBalance = document.querySelector('.balance-amount');
+    const elInc = document.getElementById('total-income');
+    const elExp = document.getElementById('total-expense');
+
+    if (elBalance) elBalance.textContent = fmt(total);
+    if (elInc) elInc.textContent = fmt(inc);
+    if (elExp) elExp.textContent = fmt(exp);
+}
+
+function renderTransactions() {
+    const list = document.getElementById('transactionList');
+    if (!list) return;
+
+    if (state.transactions.length === 0) {
+        list.innerHTML = `<div class="empty-state"><i class="ri-inbox-line"></i><p>No transactions yet</p></div>`;
+        return;
     }
 
-    // Modal Close
-    const closeBtn = document.getElementById('closeModal');
-    if(closeBtn) closeBtn.onclick = () => document.getElementById('addModal').classList.remove('active');
+    list.innerHTML = state.transactions.slice(0, 10).map((t, idx) => {
+        const isExp = t.amount < 0;
+        return `
+            <div class="trx-item" style="--i: ${idx}" data-id="${t.id}">
+                <div class="trx-left">
+                    <div class="trx-icon ${isExp ? 'exp' : 'inc'}">
+                        <i class="${getCategoryIcon(t.category)}"></i>
+                    </div>
+                    <div class="trx-info">
+                        <h4>${t.title}</h4>
+                        <small>${t.category} • ${new Date(t.date).toLocaleDateString()}</small>
+                    </div>
+                </div>
+                <div class="trx-amount ${isExp ? 'neg' : 'pos'}">
+                    ${isExp ? '-' : ''}${fmt(Math.abs(t.amount))}
+                </div>
+                <button class="del-trx-btn" data-id="${t.id}"><i class="ri-delete-bin-line"></i></button>
+            </div>
+        `;
+    }).join('');
+}
 
-    // Tab Switching
+function renderWallets() {
+    const list = document.getElementById('walletList');
+    if (!list) return;
+
+    list.innerHTML = state.wallets.map(w => `
+        <div class="wallet-card" style="background: ${w.color || 'var(--primary-gradient)'};" 
+             onclick="openEditWallet('${w.id}', '${w.name}', ${w.balance})">
+            <div class="card-head">
+                <span class="card-name">${w.name}</span>
+                <i class="ri-visa-line"></i>
+            </div>
+            <div class="card-body">
+                <small>Balance</small>
+                <h2>${fmt(w.balance)}</h2>
+            </div>
+            <div class="card-footer">
+                <span>${w.number || '**** **** ****'}</span>
+                <button class="edit-btn"><i class="ri-pencil-line"></i></button>
+            </div>
+        </div>
+    `).join('') + `
+        <button class="add-wallet-placeholder" onclick="alert('Full version required to add more wallets')">
+            <i class="ri-add-line"></i>
+            <span>Add New Wallet</span>
+        </button>
+    `;
+
+    // Also update Wallet Dropdown in Add Modal
+    const select = document.getElementById('trxWallet');
+    if (select) {
+        select.innerHTML = state.wallets.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+    }
+}
+
+function renderStats() {
+    const list = document.getElementById('statsList');
+    if (!list) return;
+
+    const expenses = state.transactions.filter(t => t.amount < 0);
+    const totalExp = expenses.reduce((a, b) => a + Math.abs(b.amount), 0);
+
+    const cats = {};
+    expenses.forEach(t => {
+        cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount);
+    });
+
+    list.innerHTML = Object.entries(cats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, amount]) => {
+            const perc = totalExp > 0 ? ((amount / totalExp) * 100).toFixed(0) : 0;
+            return `
+                <div class="stat-breakdown-item">
+                    <div class="cat-label">
+                        <i class="${getCategoryIcon(name)}"></i>
+                        <span>${name}</span>
+                    </div>
+                    <div class="cat-value">
+                        <b>${fmt(amount)}</b>
+                        <small>${perc}%</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+}
+
+// --- 5. EVENT HANDLERS (ALL BUTTON FUNCTIONS) ---
+function setupGenericListeners() {
+    // a. Bottom Nav Switcher
     document.querySelectorAll('.nav-item').forEach(item => {
-        item.onclick = (e) => {
-            e.preventDefault();
+        item.onclick = () => {
             const tab = item.dataset.tab;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            item.classList.add('active');
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
-            const view = document.getElementById(tab+'-view');
-            if(view) view.classList.add('active-view');
-            
-            // Resize charts
-            if(tab === 'home' && cashflowChart) cashflowChart.resize();
-            if(tab === 'stats' && expenseChart) expenseChart.resize();
+            switchTab(tab);
         };
     });
 
-    // Forms
-    // Using delegation for robustness
-    document.body.onclick = (e) => {
-        // Quick Actions
-        const btn = e.target.closest('.action-btn');
-        if(btn) {
-            const txt = btn.querySelector('span')?.textContent;
-            if(txt) openTrxModal(txt);
-        }
-        
-        // Wallet Card Edit (Delegation)
-        const card = e.target.closest('.wallet-card');
-        if(card) {
-            const id = card.dataset.id;
-            const name = card.dataset.name;
-            const bal = card.dataset.bal;
-            if(id) editWallet(id, name, bal);
-        }
-    };
+    // b. FAB Button (+)
+    const fab = document.getElementById('open-add-modal');
+    if (fab) fab.onclick = () => openAddTrxModal();
 
-    document.body.addEventListener('submit', handleForms);
-}
+    // c. Close Modals
+    document.querySelectorAll('.close-modal-btn, .cancel-wallet-btn, .modal-overlay').forEach(el => {
+        el.onclick = (e) => {
+            if (e.target === el || el.classList.contains('close-modal-btn') || el.classList.contains('cancel-wallet-btn')) {
+                closeAllModals();
+            }
+        };
+    });
 
-async function handleForms(e) {
-    if(e.target.id === 'trxForm') {
-        e.preventDefault();
-        console.log('Submitting Trx');
-        const btn = e.target.querySelector('button');
-        const oldText = btn.textContent;
-        btn.textContent = 'Saving...';
-        
-        try {
-            const amt = parseFloat(document.getElementById('trxAmount').value);
-            const cat = document.getElementById('trxCategory').value;
-            const isInc = ['Income','Salary','Bonus','Investment'].includes(cat);
-            const finalAmt = isInc ? Math.abs(amt) : -Math.abs(amt);
-            
-            const newTx = {
-                id: Date.now(),
-                title: document.getElementById('trxTitle').value,
-                amount: finalAmt,
-                category: cat,
-                date: new Date()
-            };
+    // d. Quick Actions
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.onclick = () => {
+            const preset = btn.dataset.preset;
+            if (preset === 'More') {
+                alert('More features coming soon!');
+            } else {
+                openAddTrxModal(preset);
+            }
+        };
+    });
 
-            await fetch(API.TRX, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(newTx)
-            });
-            
-            document.getElementById('addModal').classList.remove('active');
-            e.target.reset();
-            loadAll();
-        } catch(err) {
-            alert('Error saving: ' + err.message);
-        } finally {
-            btn.textContent = oldText;
-        }
+    // e. Form: Add Transaction
+    const trxForm = document.getElementById('trxForm');
+    if (trxForm) {
+        trxForm.onsubmit = async (e) => {
+            e.preventDefault();
+            await saveTransaction();
+        };
     }
-    
-    if(e.target.id === 'walletForm') {
-        e.preventDefault();
-        const id = document.getElementById('walletId').value;
-        const name = document.getElementById('walletName').value;
-        const balance = document.getElementById('walletBalance').value;
-        
-        await fetch(API.WALLET, {
-             method: 'PUT',
-             headers: {'Content-Type':'application/json'},
-             body: JSON.stringify({id, name, balance})
-        });
-        document.getElementById('walletModal').classList.remove('active');
-        loadWallets();
+
+    // f. Form: Edit Wallet
+    const walletForm = document.getElementById('walletForm');
+    if (walletForm) {
+        walletForm.onsubmit = async (e) => {
+            e.preventDefault();
+            await saveWalletEdit();
+        };
     }
+
+    // g. Delete TRX (Event Delegation)
+    document.body.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('.del-trx-btn');
+        if (delBtn) {
+            const id = delBtn.dataset.id;
+            if (confirm('Delete this transaction?')) {
+                await deleteTransaction(id);
+            }
+        }
+    });
 }
 
+// --- 6. CORE APP FUNCTIONS ---
 
-// --- 2. Chart Init ---
-let cashflowChart, expenseChart;
-function initCharts() {
-    try {
-        const ctx1 = document.getElementById('cashflowChart')?.getContext('2d');
-        if(ctx1) {
-            cashflowChart = new Chart(ctx1, {
-                type: 'bar',
-                data: { labels: ['Income', 'Expense'], datasets: [{ label: 'Total', data: [0, 0], backgroundColor: ['#30D158', '#FF453A'], borderRadius: 8 }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
-        }
+function switchTab(tabId) {
+    state.activeTab = tabId;
 
-        const ctx2 = document.getElementById('expenseChart')?.getContext('2d');
-        if(ctx2) {
-            expenseChart = new Chart(ctx2, {
-                type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF453A', '#FF9F0A', '#30D158', '#0A84FF', '#BF5AF2'], borderWidth: 0 }] },
-                options: { cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } } }
-            });
-        }
-    } catch(e) { console.error('Chart Error', e); }
+    // Update UI Nav
+    document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.toggle('active', n.dataset.tab === tabId);
+    });
+
+    // Update View
+    document.querySelectorAll('.view-section').forEach(v => {
+        v.classList.toggle('active-view', v.id === `${tabId}-view`);
+    });
+
+    // Refresh charts if needed
+    if (tabId === 'stats' && charts.expense) charts.expense.resize();
+    if (tabId === 'home' && charts.main) charts.main.resize();
 }
 
-// --- 3. UI Helpers ---
-window.openTrxModal = (presetCat) => {
-    const modal = document.getElementById('addModal');
-    if(!modal) return;
-    
-    if(presetCat && presetCat !== 'More') {
-        const select = document.getElementById('trxCategory');
-        if(select) {
-             let val = presetCat;
-             if(presetCat === 'Bill') val = 'Bills';
-             if(presetCat === 'Topup') val = 'Salary';
-             select.value = val;
-        }
+function openAddTrxModal(preset = '') {
+    const modal = document.getElementById('addTrxModal');
+    const select = document.getElementById('trxCategory');
+    if (preset && select) {
+        // Find best match in categories
+        const match = Array.from(select.options).find(opt => opt.value.includes(preset));
+        if (match) select.value = match.value;
     }
     modal.classList.add('active');
+    document.getElementById('trxAmount').focus();
 }
 
-window.editWallet = (id, name, bal) => {
-    const m = document.getElementById('walletModal');
-    if(!m) return;
-    document.getElementById('walletId').value = id;
-    document.getElementById('walletName').value = name;
-    document.getElementById('walletBalance').value = bal;
-    m.classList.add('active');
+window.openEditWallet = (id, name, balance) => {
+    const modal = document.getElementById('editWalletModal');
+    document.getElementById('editWalletId').value = id;
+    document.getElementById('editWalletName').value = name;
+    document.getElementById('editWalletBalance').value = balance;
+    modal.classList.add('active');
+};
+
+function closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
 }
 
-window.deleteTrx = async (id) => {
-    if(confirm('Delete?')) {
-        await fetch(`${API.TRX}?id=${id}`, {method:'DELETE'});
-        loadAll();
-    }
-}
+async function saveTransaction() {
+    const amt = parseFloat(document.getElementById('trxAmount').value);
+    const title = document.getElementById('trxTitle').value;
+    const catName = document.getElementById('trxCategory').value;
+    const walletId = document.getElementById('trxWallet').value;
 
-function injectEditWalletModal() {
-    if(document.getElementById('walletModal')) return;
-    const div = document.createElement('div');
-    div.innerHTML = `
-    <div class="modal-overlay" id="walletModal">
-      <div class="glass-card" style="width: 90%; max-width: 400px; padding: 24px; margin: auto;">
-        <h3 style="margin-bottom: 20px;">Edit Wallet</h3>
-        <form id="walletForm">
-            <input type="hidden" id="walletId">
-            <div class="form-group" style="margin-bottom:15px;">
-                <label style="display:block; margin-bottom:5px; color:#888">Name</label>
-                <input type="text" id="walletName" required style="width:100%; padding:10px; border-radius:10px; border:none; background:#333; color:white;">
-            </div>
-            <div class="form-group" style="margin-bottom:20px;">
-                <label style="display:block; margin-bottom:5px; color:#888">Balance</label>
-                <input type="number" id="walletBalance" required style="width:100%; padding:10px; border-radius:10px; border:none; background:#333; color:white;">
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button type="button" onclick="document.getElementById('walletModal').classList.remove('active')" style="flex:1; background:#333; color:white; border:none; padding:12px; border-radius:12px;">Cancel</button>
-                <button type="submit" style="flex:1; background:#0A84FF; color:white; border:none; padding:12px; border-radius:12px;">Save</button>
-            </div>
-        </form>
-      </div>
-    </div>`;
-    document.body.appendChild(div);
-}
+    // Logic: find if selected category is 'Income' type
+    const catObj = state.categories.find(c => c.name === catName);
+    const finalAmt = (catObj && catObj.type === 'income') ? Math.abs(amt) : -Math.abs(amt);
 
-function fmt(n) { return new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR'}).format(n).replace('Rp', 'Rp '); }
+    const newTrx = {
+        id: Date.now(),
+        title,
+        amount: finalAmt,
+        category: catName,
+        date: new Date().toISOString()
+    };
 
+    try {
+        const res = await fetch(API.TRX, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newTrx)
+        });
 
-// --- 4. Render Logic ---
-function render() {
-    console.log('Rendering...');
-    // Totals
-    const inc = transactions.filter(t => t.amount > 0).reduce((a,b) => a+b.amount, 0);
-    const expObj = transactions.filter(t => t.amount < 0);
-    const exp = expObj.reduce((a,b) => a+Math.abs(b.amount), 0);
-    const total = inc - exp;
-    
-    const balEl = document.querySelector('.balance-amount');
-    if(balEl) balEl.textContent = fmt(total);
-
-    // Charts
-    if(cashflowChart) {
-        cashflowChart.data.datasets[0].data = [inc, exp];
-        cashflowChart.update();
-    }
-    
-    // Wallets
-    const walletContainer = document.getElementById('wallet-view');
-    if(walletContainer) {
-        // Find existing list or header
-        let list = walletContainer.querySelector('.wallet-list-dynamic');
-        if(!list) {
-            list = document.createElement('div');
-            list.className = 'wallet-list-dynamic';
-            list.style.cssText = 'padding: 20px; display: flex; flex-direction: column; gap: 16px;';
-            walletContainer.appendChild(list);
-            
-            // Cleanup placeholder if exists
-            const ph = walletContainer.querySelector('.placeholder-view');
-            if(ph) ph.style.display = 'none';
+        if (res.ok) {
+            closeAllModals();
+            document.getElementById('trxForm').reset();
+            await fetchAllData();
+            renderAll();
         }
-        
-        list.innerHTML = wallets.map(w => `
-            <div class="wallet-card" data-id="${w.id}" data-name="${w.name}" data-bal="${w.balance}" style="background: ${w.color||'#333'}; cursor:pointer">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="card-logo">${w.name}</span>
-                    <i class="ri-wallet-3-line card-icon"></i>
-                </div>
-                <div class="card-label">Balance</div>
-                <div class="card-balance">${fmt(w.balance)}</div>
-            </div>
-        `).join('');
-    }
-
-    // Transactions
-    const trxList = document.getElementById('transactionList');
-    if(trxList) {
-        trxList.innerHTML = transactions.map((t,i) => `
-            <div class="trx-item" onclick="deleteTrx('${t.id}')" style="--i: ${i}">
-                <div class="trx-left">
-                     <div class="trx-icon" style="color:${t.amount<0?'#FF9F0A':'#30D158'}"><i class="ri-bill-line"></i></div>
-                     <div class="trx-info">
-                        <h4>${t.title}</h4>
-                        <p>${t.category}</p>
-                     </div>
-                </div>
-                <div class="trx-amount" style="color:${t.amount<0?'#fff':'#30D158'}">${fmt(t.amount)}</div>
-            </div>
-        `).join('');
+    } catch (e) {
+        alert('Failed to save. Check your connection.');
     }
 }
 
+async function saveWalletEdit() {
+    const id = document.getElementById('editWalletId').value;
+    const name = document.getElementById('editWalletName').value;
+    const balance = parseFloat(document.getElementById('editWalletBalance').value);
 
-// --- 5. Data Calls ---
-async function loadAll() {
     try {
-        await Promise.allSettled([loadTrx(), loadWallets(), loadCats()]);
-    } finally {
-        render(); // Always render even if empty
-    }
-}
+        const res = await fetch(API.WALLET, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, name, balance })
+        });
 
-async function loadTrx() {
-    try {
-        const r = await fetch(API.TRX, {cache:'no-store'});
-        if(r.ok) {
-            const d = await r.json();
-            transactions = d.map(t => ({...t, amount: parseFloat(t.amount)}));
+        if (res.ok) {
+            closeAllModals();
+            await fetchAllData();
+            renderAll();
         }
-    } catch(e) { console.error('Trx fail', e); }
-}
-
-async function loadWallets() {
-    try {
-        const r = await fetch(API.WALLET);
-        if(r.ok) {
-           wallets = await r.json();
-           if(!wallets.length) throw new Error('Empty');
-        } else throw new Error('API Fail');
-    } catch(e) {
-        // Fallback
-        wallets = [
-            {id:1, name:'BCA', balance:15000000, color:'#10439F'},
-            {id:2, name:'Gopay', balance:250000, color:'#00ADD6'},
-            {id:3, name:'Cash', balance:500000, color:'#34C759'}
-        ];
+    } catch (e) {
+        alert('Failed to update wallet.');
     }
 }
 
-async function loadCats() {
+async function deleteTransaction(id) {
     try {
-        const r = await fetch(API.CAT);
-        if(r.ok) categories = await r.json();
-        const sel = document.getElementById('trxCategory');
-        if(sel && categories.length) {
-            sel.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        const res = await fetch(`${API.TRX}?id=${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            await fetchAllData();
+            renderAll();
         }
-    } catch(e) {}
+    } catch (e) {
+        alert('Delete failed.');
+    }
 }
 
+// --- 7. UTILS & CHARTS ---
+function fmt(num) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+    }).format(num).replace('Rp', 'Rp ');
+}
 
-// --- EXECUTE ---
-setupListeners(); // Event handlers immediately
-injectEditWalletModal();
-setTimeout(initCharts, 500);
-loadAll(); // Data last
+function getCategoryIcon(catName) {
+    const map = {
+        'Food': 'ri-restaurant-line',
+        'Transport': 'ri-taxi-line',
+        'Shopping': 'ri-shopping-bag-3-line',
+        'Entertainment': 'ri-movie-line',
+        'Health': 'ri-heart-pulse-line',
+        'Bills': 'ri-bill-line',
+        'Salary': 'ri-briefcase-line',
+        'Gift': 'ri-gift-line',
+        'Investment': 'ri-pulse-line'
+    };
+    return map[catName] || 'ri-wallet-3-line';
+}
+
+function populateCategoryDropdown() {
+    const select = document.getElementById('trxCategory');
+    if (!select) return;
+    select.innerHTML = state.categories.map(c =>
+        `<option value="${c.name}">${c.type === 'income' ? '💰' : '💸'} ${c.name}</option>`
+    ).join('');
+}
+
+function initCharts() {
+    const ctx1 = document.getElementById('cashflowChart');
+    if (ctx1) {
+        charts.main = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Income',
+                    data: [0, 0, 0, 0, 0, 0, 0],
+                    borderColor: '#30D158',
+                    backgroundColor: 'rgba(48, 209, 88, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { display: false }
+                }
+            }
+        });
+    }
+
+    const ctx2 = document.getElementById('expenseChart');
+    if (ctx2) {
+        charts.expense = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ['#FF453A', '#FF9F0A', '#30D158', '#0A84FF', '#BF5AF2', '#5AC8FA'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+}
+
+function updateCharts() {
+    if (charts.expense) {
+        const expenses = state.transactions.filter(t => t.amount < 0);
+        const cats = {};
+        expenses.forEach(t => cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount));
+
+        charts.expense.data.labels = Object.keys(cats);
+        charts.expense.data.datasets[0].data = Object.values(cats);
+        charts.expense.update();
+    }
+}

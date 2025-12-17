@@ -2,248 +2,250 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MyCashFlow - Premium Finance</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/wallet--v1.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#000000">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/wallet--v1.png">
-  <title>MyCashFlow</title>
 
-  <!-- Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
-    rel="stylesheet">
-  <!-- Icons -->
+  <!-- Fonts & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
   <div id="app">
-    <!-- Top Bar -->
-    <header class="mobile-header">
-      <div class="header-left">
-        <div class="avatar">me</div>
-        <div class="greeting">
-          <span class="sub">Welcome back,</span>
-          <span class="name">Kons</span>
-        </div>
-      </div>
-      <div class="header-right">
-        <button class="icon-btn"><i class="ri-notification-3-line"></i></button>
-      </div>
-    </header>
-
-    <!-- Scrollable Content -->
-    <!-- Home View -->
+    <!-- View: Home -->
     <div id="home-view" class="view-section active-view">
-      <!-- Balance Card -->
-      <section class="balance-card">
-        <div class="balance-label">Total Balance</div>
-        <div class="balance-amount">Rp 45.250.000</div>
-        <div class="balance-stats">
-          <div class="stat up">
-            <i class="ri-arrow-up-circle-fill"></i>
-            <span>+2.5jt Income</span>
+      <header class="main-header">
+        <div class="user-profile">
+          <div class="avatar">
+            <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User">
           </div>
-          <div class="stat down">
-            <i class="ri-arrow-down-circle-fill"></i>
-            <span>-1.2jt Expense</span>
+          <div class="welcome">
+            <p>Good Morning,</p>
+            <h3>Ready for today?</h3>
+          </div>
+        </div>
+        <button class="notif-btn"><i class="ri-notification-3-line"></i></button>
+      </header>
+
+      <section class="balance-card">
+        <div class="card-content">
+          <p>Total Balance</p>
+          <h1 class="balance-amount">Rp 0</h1>
+          <div class="stats-row">
+            <div class="stat up">
+              <div class="icon-circle"><i class="ri-arrow-up-line"></i></div>
+              <div class="stat-info">
+                <small>Income</small>
+                <span id="total-income">Rp 0</span>
+              </div>
+            </div>
+            <div class="stat down">
+              <div class="icon-circle"><i class="ri-arrow-down-line"></i></div>
+              <div class="stat-info">
+                <small>Expense</small>
+                <span id="total-expense">Rp 0</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Quick Actions -->
-      <section class="quick-actions">
-        <button class="action-btn">
-          <div class="icon-box transfer"><i class="ri-exchange-dollar-line"></i></div>
+      <div class="quick-actions">
+        <button class="action-btn" data-preset="Transfer">
+          <div class="icon-box blue"><i class="ri-exchange-dollar-line"></i></div>
           <span>Transfer</span>
         </button>
-        <button class="action-btn">
-          <div class="icon-box bill"><i class="ri-bill-line"></i></div>
+        <button class="action-btn" data-preset="Topup">
+          <div class="icon-box green"><i class="ri-add-circle-line"></i></div>
+          <span>Topup</span>
+        </button>
+        <button class="action-btn" data-preset="Bill">
+          <div class="icon-box orange"><i class="ri-bill-line"></i></div>
           <span>Bill</span>
         </button>
-        <button class="action-btn">
-          <div class="icon-box topup"><i class="ri-wallet-3-line"></i></div>
-          <span>Top Up</span>
-        </button>
-        <button class="action-btn">
-          <div class="icon-box more"><i class="ri-grid-fill"></i></div>
+        <button class="action-btn" id="more-actions">
+          <div class="icon-box purple"><i class="ri-apps-2-line"></i></div>
           <span>More</span>
         </button>
-      </section>
-
-      <!-- Analytics -->
-      <section class="section-title">
-        <h3>Cashflow Trend</h3>
-      </section>
-      <div class="chart-container-mobile">
-        <canvas id="cashflowChart"></canvas>
       </div>
 
-      <!-- Recent Transactions -->
-      <section class="section-title">
-        <h3>Recent Activity</h3>
-        <a href="#" class="see-all">See All</a>
+      <section class="chart-section">
+        <div class="chart-header">
+          <h3>Cashflow Trend</h3>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="cashflowChart"></canvas>
+        </div>
       </section>
-      <div class="transaction-list" id="transactionList">
-        <!-- Populated by JS -->
-      </div>
 
-      <!-- Spacer -->
-      <div style="height: 100px;"></div>
+      <section class="recent-transactions">
+        <div class="section-header">
+          <h3>Recent Transactions</h3>
+          <a href="#" id="view-all-trx">View All</a>
+        </div>
+        <div class="transaction-list" id="transactionList">
+          <!-- Populated by JS -->
+          <div class="loading-state">Loading data...</div>
+        </div>
+      </section>
+
+      <div class="safe-area-spacer"></div>
     </div>
 
-    <!-- Stats View -->
+    <!-- View: Stats -->
     <div id="stats-view" class="view-section">
-      <header class="mobile-header" style="position: sticky; top: 0;">
-        <h3>Statistics</h3>
+      <header class="header-simple">
+        <h2>Analytics</h2>
       </header>
-      <div style="padding: 20px;">
-        <div class="glass-card" style="padding: 20px; text-align: center; margin-bottom: 20px;">
-          <h4 style="margin-bottom:15px; color:var(--text-secondary);">Expenses by Category</h4>
-          <div style="height: 250px; position: relative;">
+      <div class="analytics-content" style="padding: 20px;">
+        <div class="glass-card chart-card">
+          <h4>Spending by Category</h4>
+          <div style="height: 250px; position: relative; margin-top: 15px;">
             <canvas id="expenseChart"></canvas>
           </div>
         </div>
-        <div id="statsList" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- JS will populate -->
+        <div id="statsList" class="stats-breakdown">
+          <!-- JS -->
         </div>
       </div>
+      <div class="safe-area-spacer"></div>
     </div>
 
-    <!-- Wallet View -->
+    <!-- View: Wallet -->
     <div id="wallet-view" class="view-section">
-      <header class="mobile-header" style="position: sticky; top: 0;">
-        <h3>My Wallet</h3>
+      <header class="header-simple">
+        <h2>My Wallets</h2>
+        <button class="add-wallet-btn"><i class="ri-add-line"></i></button>
       </header>
-
-      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
-        <!-- BCA Card -->
-        <div class="wallet-card" style="background: linear-gradient(135deg, #10439F, #001F5C);">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="card-logo">BCA</span>
-            <i class="ri-visa-line card-icon"></i>
-          </div>
-          <div class="card-label">Balance</div>
-          <div class="card-balance">Rp 15.200.000</div>
-          <div class="card-number">**** 4432</div>
-        </div>
-
-        <!-- Gopay Card -->
-        <div class="wallet-card" style="background: linear-gradient(135deg, #00ADD6, #007A99);">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="card-logo">Gopay</span>
-            <i class="ri-smartphone-line card-icon"></i>
-          </div>
-          <div class="card-label">Balance</div>
-          <div class="card-balance">Rp 450.000</div>
-          <div class="card-number">0812 **** 8888</div>
-        </div>
-
-        <!-- Cash Card -->
-        <div class="wallet-card" style="background: linear-gradient(135deg, #34C759, #248A3D);">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="card-logo">Cash</span>
-            <i class="ri-money-dollar-circle-line card-icon"></i>
-          </div>
-          <div class="card-label">On Hand</div>
-          <div class="card-balance">Rp 1.500.000</div>
-        </div>
+      <div id="walletList" class="wallet-list-container">
+        <!-- JS -->
       </div>
+      <div class="safe-area-spacer"></div>
     </div>
 
-    <!-- Profile View -->
+    <!-- View: Profile -->
     <div id="profile-view" class="view-section">
-      <header class="mobile-header" style="position: sticky; top: 0;">
-        <h3>Profile</h3>
+      <header class="header-simple">
+        <h2>Profile</h2>
       </header>
-      <div class="placeholder-view">
-        <i class="ri-user-3-line"></i>
-        <h3>User Profile</h3>
-        <p>Settings and preferences</p>
-      </div>
-    </div>
-
-    <!-- Add Transaction Modal -->
-    <div class="modal-overlay" id="addModal">
-      <div class="bottom-sheet">
-        <div class="sheet-header">
-          <h3>New Transaction</h3>
-          <button class="close-btn" id="closeModal"><i class="ri-close-line"></i></button>
+      <div class="profile-content" style="padding: 20px;">
+        <div class="glass-card user-info-card">
+          <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128" alt="Avatar">
+          <h3>Personal Account</h3>
+          <p>user@example.com</p>
         </div>
-        <form id="trxForm" class="trx-form">
-          <div class="form-group">
-            <label>Amount (Rp)</label>
-            <input type="number" id="trxAmount" placeholder="0" required inputmode="numeric">
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <input type="text" id="trxTitle" placeholder="e.g. Nasi Goreng" required>
-          </div>
-          <div class="form-group">
-            <label>Category</label>
-            <select id="trxCategory">
-              <option value="Food">🍔 Food</option>
-              <option value="Transport">🚕 Transport</option>
-              <option value="Shopping">🛍️ Shopping</option>
-              <option value="Entertainment">🎬 Entertainment</option>
-              <option value="Income">💰 Income</option>
-            </select>
-          </div>
-          <button type="submit" class="save-btn">Save Transaction</button>
-        </form>
+        <div class="menu-list">
+          <button class="menu-item"><i class="ri-settings-4-line"></i> Settings <i
+              class="ri-arrow-right-s-line"></i></button>
+          <button class="menu-item"><i class="ri-shield-user-line"></i> Privacy <i
+              class="ri-arrow-right-s-line"></i></button>
+          <button class="menu-item"><i class="ri-question-line"></i> Support <i
+              class="ri-arrow-right-s-line"></i></button>
+          <button class="menu-item logout" onclick="alert('Logged out!')"><i class="ri-logout-box-r-line"></i>
+            Logout</button>
+        </div>
       </div>
+      <div class="safe-area-spacer"></div>
     </div>
 
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
-      <a href="#" class="nav-item active" data-tab="home">
+      <div class="nav-item active" data-tab="home">
         <i class="ri-home-5-line"></i>
         <span>Home</span>
-      </a>
-      <a href="#" class="nav-item" data-tab="stats">
+      </div>
+      <div class="nav-item" data-tab="stats">
         <i class="ri-pie-chart-2-line"></i>
         <span>Stats</span>
-      </a>
-      <div class="nav-fab">
+      </div>
+      <div class="nav-fab" id="open-add-modal">
         <i class="ri-add-line"></i>
       </div>
-      <a href="#" class="nav-item" data-tab="wallet">
+      <div class="nav-item" data-tab="wallet">
         <i class="ri-wallet-3-line"></i>
         <span>Wallet</span>
-      </a>
-      <a href="#" class="nav-item" data-tab="profile">
+      </div>
+      <div class="nav-item" data-tab="profile">
         <i class="ri-user-3-line"></i>
         <span>Profile</span>
-      </a>
+      </div>
     </nav>
 
-    <!-- GitHub Library: pwa-install -->
-    <pwa-install id="pwa-install" name="MyCashFlow" icon="/icon-192.png" manifest-url="/manifest.json"
-      manual-apple="true">
-    </pwa-install>
+    <!-- Modal: Add Transaction -->
+    <div class="modal-overlay" id="addTrxModal">
+      <div class="bottom-sheet">
+        <div class="sheet-header">
+          <div class="handle"></div>
+          <div class="header-content">
+            <h3>New Transaction</h3>
+            <button class="close-modal-btn"><i class="ri-close-line"></i></button>
+          </div>
+        </div>
+        <div class="sheet-body">
+          <form id="trxForm">
+            <div class="form-group">
+              <label>Amount (IDR)</label>
+              <input type="number" id="trxAmount" placeholder="0" required autofocus>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input type="text" id="trxTitle" placeholder="e.g. Lunch with friends" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Category</label>
+                <select id="trxCategory">
+                  <!-- JS -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Wallet</label>
+                <select id="trxWallet">
+                  <!-- JS -->
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="primary-btn">Save Transaction</button>
+          </form>
+        </div>
+      </div>
+    </div>
 
-    <script>
-      // Force show instructions on iOS if not installed
-      window.addEventListener('load', () => {
-        const pwaInstall = document.getElementById('pwa-install');
-        // Check if iOS and not standalone
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isStandalone = window.navigator.standalone;
+    <!-- Modal: Edit Wallet -->
+    <div class="modal-overlay" id="editWalletModal">
+      <div class="center-dialog">
+        <div class="glass-card dialog-box">
+          <h3>Edit Wallet</h3>
+          <form id="walletForm">
+            <input type="hidden" id="editWalletId">
+            <div class="form-group">
+              <label>Wallet Name</label>
+              <input type="text" id="editWalletName" required>
+            </div>
+            <div class="form-group">
+              <label>Balance</label>
+              <input type="number" id="editWalletBalance" required>
+            </div>
+            <div class="dialog-actions">
+              <button type="button" class="secondary-btn cancel-wallet-btn">Cancel</button>
+              <button type="submit" class="primary-btn">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-        if (isIOS && !isStandalone) {
-          // Show the prompt (library handles the UI)
-          setTimeout(() => {
-            if (pwaInstall && pwaInstall.showDialog) {
-              pwaInstall.showDialog(true);
-            }
-          }, 3000);
-        }
-      });
-    </script>
+    <!-- PWA Install Component -->
+    <pwa-install id="ios-pwa-install" manual-apple="true"></pwa-install>
+
   </div>
   <script type="module" src="/main.js"></script>
 </body>
