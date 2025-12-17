@@ -90,15 +90,18 @@ function renderBalance() {
 
     const elIdr = document.getElementById('balance-idr');
     const elUsd = document.getElementById('balance-usd');
-    const elInc = document.getElementById('total-income');
-    const elExp = document.getElementById('total-expense');
+    const elIncIdr = document.getElementById('total-income-idr');
+    const elIncUsd = document.getElementById('total-income-usd');
+    const elExpIdr = document.getElementById('total-expense-idr');
+    const elExpUsd = document.getElementById('total-expense-usd');
 
     if (elIdr) elIdr.textContent = fmt(totals.IDR, 'IDR');
     if (elUsd) elUsd.textContent = fmt(totals.USD, 'USD');
 
-    // Show IDR stats in the small bottom row for now
-    if (elInc) elInc.textContent = fmt(incomes.IDR, 'IDR');
-    if (elExp) elExp.textContent = fmt(expenses.IDR, 'IDR');
+    if (elIncIdr) elIncIdr.textContent = fmt(incomes.IDR, 'IDR');
+    if (elIncUsd) elIncUsd.textContent = fmt(incomes.USD, 'USD');
+    if (elExpIdr) elExpIdr.textContent = fmt(expenses.IDR, 'IDR');
+    if (elExpUsd) elExpUsd.textContent = fmt(expenses.USD, 'USD');
 }
 
 function renderTransactions() {
@@ -172,32 +175,55 @@ function renderStats() {
     const list = document.getElementById('statsList');
     if (!list) return;
 
-    const expenses = state.transactions.filter(t => t.amount < 0);
-    const totalExp = expenses.reduce((a, b) => a + Math.abs(b.amount), 0);
-    const mainCurrency = state.wallets[0]?.currency || 'IDR';
+    // Grouping by currency then category
+    const data = {};
+    state.wallets.forEach(w => { data[w.currency] = {}; });
+    if (!data['IDR']) data['IDR'] = {};
+    if (!data['USD']) data['USD'] = {};
 
-    const cats = {};
-    expenses.forEach(t => {
-        cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount);
+    state.transactions.forEach(t => {
+        const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || { currency: 'IDR' };
+        const cur = wallet.currency;
+        if (!data[cur][t.category]) data[cur][t.category] = { income: 0, expense: 0, total: 0 };
+
+        const amt = Math.abs(t.amount);
+        if (t.amount > 0) data[cur][t.category].income += amt;
+        else data[cur][t.category].expense += amt;
+        data[cur][t.category].total += amt;
     });
 
-    list.innerHTML = Object.entries(cats)
-        .sort((a, b) => b[1] - a[1])
-        .map(([name, amount]) => {
-            const perc = totalExp > 0 ? ((amount / totalExp) * 100).toFixed(0) : 0;
-            return `
-                <div class="stat-breakdown-item">
-                    <div class="cat-label">
-                        <i class="${getCategoryIcon(name)}"></i>
-                        <span>${name}</span>
+    let html = '';
+    Object.entries(data).forEach(([cur, cats]) => {
+        const totalCurrencyVolume = Object.values(cats).reduce((a, b) => a + b.total, 0);
+        if (totalCurrencyVolume === 0) return;
+
+        html += `<h4 style="margin: 20px 0 10px; color: var(--primary-color)">${cur} Breakdown</h4>`;
+
+        Object.entries(cats)
+            .sort((a, b) => b[1].total - a[1].total)
+            .map(([name, vals]) => {
+                const perc = ((vals.total / totalCurrencyVolume) * 100).toFixed(0);
+                html += `
+                    <div class="stat-breakdown-item">
+                        <div class="cat-label">
+                            <i class="${getCategoryIcon(name)}"></i>
+                            <div>
+                                <span>${name}</span>
+                                <div style="font-size: 0.65rem; opacity: 0.6">
+                                    In: ${fmt(vals.income, cur)} | Out: ${fmt(vals.expense, cur)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cat-value">
+                            <b>${fmt(vals.total, cur)}</b>
+                            <small>${perc}%</small>
+                        </div>
                     </div>
-                    <div class="cat-value">
-                        <b>${fmt(amount, mainCurrency)}</b>
-                        <small>${perc}%</small>
-                    </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            });
+    });
+
+    list.innerHTML = html || '<p style="text-align:center; opacity:0.5; padding:20px;">No transactions found</p>';
 }
 
 // --- 5. EVENT HANDLERS ---
@@ -467,9 +493,12 @@ function initCharts() {
 
 function updateCharts() {
     if (charts.expense) {
-        const expenses = state.transactions.filter(t => t.amount < 0);
+        // For the pie chart, we'll combine all transaction volumes (in simplified ratio) 
+        // to show category importance across all wallets.
         const cats = {};
-        expenses.forEach(t => cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount));
+        state.transactions.forEach(t => {
+            cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount);
+        });
 
         charts.expense.data.labels = Object.keys(cats);
         charts.expense.data.datasets[0].data = Object.values(cats);

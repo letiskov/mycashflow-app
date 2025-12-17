@@ -679,3 +679,11 @@ input:focus {
     text-align: right;
 }
 
+
+.sub-stat {
+    display: block;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    font-weight: 400 !important;
+}
+
