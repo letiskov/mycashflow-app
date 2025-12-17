@@ -1,4 +1,7 @@
-import './style.css'
+
+const fs = require('fs');
+
+const content = `import './style.css'
 import '@khmyznikov/pwa-install'
 import Chart from 'chart.js/auto'
 
@@ -96,7 +99,7 @@ function renderTransactions() {
     if (!list) return;
 
     if (state.transactions.length === 0) {
-        list.innerHTML = `<div class="empty-state"><i class="ri-inbox-line"></i><p>No transactions yet</p></div>`;
+        list.innerHTML = \`<div class="empty-state"><i class="ri-inbox-line"></i><p>No transactions yet</p></div>\`;
         return;
     }
 
@@ -105,23 +108,23 @@ function renderTransactions() {
         // Try to match trx with wallet to get correct currency
         const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || { currency: 'IDR' };
         
-        return `
-            <div class="trx-item" style="--i: ${idx}" data-id="${t.id}">
+        return \`
+            <div class="trx-item" style="--i: \${idx}" data-id="\${t.id}">
                 <div class="trx-left">
-                    <div class="trx-icon ${isExp ? 'exp' : 'inc'}">
-                        <i class="${getCategoryIcon(t.category)}"></i>
+                    <div class="trx-icon \${isExp ? 'exp' : 'inc'}">
+                        <i class="\${getCategoryIcon(t.category)}"></i>
                     </div>
                     <div class="trx-info">
-                        <h4>${t.title}</h4>
-                        <small>${t.category} • ${new Date(t.date).toLocaleDateString()}</small>
+                        <h4>\${t.title}</h4>
+                        <small>\${t.category} • \${new Date(t.date).toLocaleDateString()}</small>
                     </div>
                 </div>
-                <div class="trx-amount ${isExp ? 'neg' : 'pos'}">
-                    ${isExp ? '-' : ''}${fmt(Math.abs(t.amount), wallet.currency)}
+                <div class="trx-amount \${isExp ? 'neg' : 'pos'}">
+                    \${isExp ? '-' : ''}\${fmt(Math.abs(t.amount), wallet.currency)}
                 </div>
-                <button class="del-trx-btn" data-id="${t.id}"><i class="ri-delete-bin-line"></i></button>
+                <button class="del-trx-btn" data-id="\${t.id}"><i class="ri-delete-bin-line"></i></button>
             </div>
-        `;
+        \`;
     }).join('');
 }
 
@@ -129,32 +132,32 @@ function renderWallets() {
     const list = document.getElementById('walletList');
     if (!list) return;
 
-    list.innerHTML = state.wallets.map(w => `
-        <div class="wallet-card" style="background: ${w.color || 'var(--primary-gradient)'};" 
-             onclick="openEditWallet('${w.id}', '${w.name}', ${w.balance})">
+    list.innerHTML = state.wallets.map(w => \`
+        <div class="wallet-card" style="background: \${w.color || 'var(--primary-gradient)'};" 
+             onclick="openEditWallet('\${w.id}', '\${w.name}', \${w.balance})">
             <div class="card-head">
-                <span class="card-name">${w.name} (${w.currency})</span>
+                <span class="card-name">\${w.name} (\${w.currency})</span>
                 <i class="ri-visa-line"></i>
             </div>
             <div class="card-body">
                 <small>Balance</small>
-                <h2>${fmt(w.balance, w.currency)}</h2>
+                <h2>\${fmt(w.balance, w.currency)}</h2>
             </div>
             <div class="card-footer">
-                <span>${w.number || '**** **** ****'}</span>
+                <span>\${w.number || '**** **** ****'}</span>
                 <button class="edit-btn"><i class="ri-pencil-line"></i></button>
             </div>
         </div>
-    `).join('') + `
+    \`).join('') + \`
         <button class="add-wallet-placeholder" onclick="alert('Full version required to add more wallets')">
             <i class="ri-add-line"></i>
             <span>Add New Wallet</span>
         </button>
-    `;
+    \`;
 
     const select = document.getElementById('trxWallet');
     if (select) {
-        select.innerHTML = state.wallets.map(w => `<option value="${w.id}">${w.name} (${w.currency})</option>`).join('');
+        select.innerHTML = state.wallets.map(w => \`<option value="\${w.id}">\${w.name} (\${w.currency})</option>\`).join('');
     }
 }
 
@@ -175,18 +178,18 @@ function renderStats() {
         .sort((a, b) => b[1] - a[1])
         .map(([name, amount]) => {
             const perc = totalExp > 0 ? ((amount / totalExp) * 100).toFixed(0) : 0;
-            return `
+            return \`
                 <div class="stat-breakdown-item">
                     <div class="cat-label">
-                        <i class="${getCategoryIcon(name)}"></i>
-                        <span>${name}</span>
+                        <i class="\${getCategoryIcon(name)}"></i>
+                        <span>\${name}</span>
                     </div>
                     <div class="cat-value">
-                        <b>${fmt(amount, mainCurrency)}</b>
-                        <small>${perc}%</small>
+                        <b>\${fmt(amount, mainCurrency)}</b>
+                        <small>\${perc}%</small>
                     </div>
                 </div>
-            `;
+            \`;
         }).join('');
 }
 
@@ -268,7 +271,7 @@ function setupInputFormatting() {
 function switchTab(tabId) {
     state.activeTab = tabId;
     document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tabId));
-    document.querySelectorAll('.view-section').forEach(v => v.classList.toggle('active-view', v.id === `${tabId}-view`));
+    document.querySelectorAll('.view-section').forEach(v => v.classList.toggle('active-view', v.id === \`\${tabId}-view\`));
     if (tabId === 'stats' && charts.expense) charts.expense.resize();
     if (tabId === 'home' && charts.main) charts.main.resize();
 }
@@ -299,7 +302,7 @@ function closeAllModals() {
 
 async function saveTransaction() {
     // Clean currency formatting (remove dots) before parsing
-    const rawAmount = document.getElementById('trxAmount').value.replace(/\./g, '');
+    const rawAmount = document.getElementById('trxAmount').value.replace(/\\./g, '');
     const amt = parseFloat(rawAmount);
     
     const title = document.getElementById('trxTitle').value;
@@ -339,7 +342,7 @@ async function saveTransaction() {
 async function saveWalletEdit() {
     const id = document.getElementById('editWalletId').value;
     const name = document.getElementById('editWalletName').value;
-    const rawBalance = document.getElementById('editWalletBalance').value.replace(/\./g, '');
+    const rawBalance = document.getElementById('editWalletBalance').value.replace(/\\./g, '');
     const balance = parseFloat(rawBalance);
 
     try {
@@ -361,7 +364,7 @@ async function saveWalletEdit() {
 
 async function deleteTransaction(id) {
     try {
-        const res = await fetch(`${API.TRX}?id=${id}`, { method: 'DELETE' });
+        const res = await fetch(\`\${API.TRX}?id=\${id}\`, { method: 'DELETE' });
         if (res.ok) {
             await fetchAllData();
             renderAll();
@@ -401,7 +404,7 @@ function populateCategoryDropdown() {
     const select = document.getElementById('trxCategory');
     if (!select) return;
     select.innerHTML = state.categories.map(c => 
-        `<option value="${c.name}">${c.type === 'income' ? '💰' : '💸'} ${c.name}</option>`
+        \`<option value="\${c.name}">\${c.type === 'income' ? '💰' : '💸'} \${c.name}</option>\`
     ).join('');
 }
 
@@ -466,3 +469,7 @@ function updateCharts() {
         charts.expense.update();
     }
 }
+`;
+
+fs.writeFileSync('main.js', content, 'utf8');
+console.log('main.js updated with currency formatting and input masking');
