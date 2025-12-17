@@ -1,4 +1,7 @@
-import './style.css'
+
+const fs = require('fs');
+
+const content = `import './style.css'
 // import '@khmyznikov/pwa-install'; // Comment out temporarily if causing issues
 import Chart from 'chart.js/auto'
 
@@ -183,7 +186,7 @@ window.editWallet = (id, name, bal) => {
 
 window.deleteTrx = async (id) => {
     if(confirm('Delete?')) {
-        await fetch(`${API.TRX}?id=${id}`, {method:'DELETE'});
+        await fetch(\`\${API.TRX}?id=\${id}\`, {method:'DELETE'});
         loadAll();
     }
 }
@@ -191,7 +194,7 @@ window.deleteTrx = async (id) => {
 function injectEditWalletModal() {
     if(document.getElementById('walletModal')) return;
     const div = document.createElement('div');
-    div.innerHTML = `
+    div.innerHTML = \`
     <div class="modal-overlay" id="walletModal">
       <div class="glass-card" style="width: 90%; max-width: 400px; padding: 24px; margin: auto;">
         <h3 style="margin-bottom: 20px;">Edit Wallet</h3>
@@ -211,7 +214,7 @@ function injectEditWalletModal() {
             </div>
         </form>
       </div>
-    </div>`;
+    </div>\`;
     document.body.appendChild(div);
 }
 
@@ -252,33 +255,33 @@ function render() {
             if(ph) ph.style.display = 'none';
         }
         
-        list.innerHTML = wallets.map(w => `
-            <div class="wallet-card" data-id="${w.id}" data-name="${w.name}" data-bal="${w.balance}" style="background: ${w.color||'#333'}; cursor:pointer">
+        list.innerHTML = wallets.map(w => \`
+            <div class="wallet-card" data-id="\${w.id}" data-name="\${w.name}" data-bal="\${w.balance}" style="background: \${w.color||'#333'}; cursor:pointer">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="card-logo">${w.name}</span>
+                    <span class="card-logo">\${w.name}</span>
                     <i class="ri-wallet-3-line card-icon"></i>
                 </div>
                 <div class="card-label">Balance</div>
-                <div class="card-balance">${fmt(w.balance)}</div>
+                <div class="card-balance">\${fmt(w.balance)}</div>
             </div>
-        `).join('');
+        \`).join('');
     }
 
     // Transactions
     const trxList = document.getElementById('transactionList');
     if(trxList) {
-        trxList.innerHTML = transactions.map((t,i) => `
-            <div class="trx-item" onclick="deleteTrx('${t.id}')" style="--i: ${i}">
+        trxList.innerHTML = transactions.map((t,i) => \`
+            <div class="trx-item" onclick="deleteTrx('\${t.id}')" style="--i: \${i}">
                 <div class="trx-left">
-                     <div class="trx-icon" style="color:${t.amount<0?'#FF9F0A':'#30D158'}"><i class="ri-bill-line"></i></div>
+                     <div class="trx-icon" style="color:\${t.amount<0?'#FF9F0A':'#30D158'}"><i class="ri-bill-line"></i></div>
                      <div class="trx-info">
-                        <h4>${t.title}</h4>
-                        <p>${t.category}</p>
+                        <h4>\${t.title}</h4>
+                        <p>\${t.category}</p>
                      </div>
                 </div>
-                <div class="trx-amount" style="color:${t.amount<0?'#fff':'#30D158'}">${fmt(t.amount)}</div>
+                <div class="trx-amount" style="color:\${t.amount<0?'#fff':'#30D158'}">\${fmt(t.amount)}</div>
             </div>
-        `).join('');
+        \`).join('');
     }
 }
 
@@ -325,7 +328,7 @@ async function loadCats() {
         if(r.ok) categories = await r.json();
         const sel = document.getElementById('trxCategory');
         if(sel && categories.length) {
-            sel.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            sel.innerHTML = categories.map(c => \`<option value="\${c.name}">\${c.name}</option>\`).join('');
         }
     } catch(e) {}
 }
@@ -336,3 +339,6 @@ setupListeners(); // Event handlers immediately
 injectEditWalletModal();
 setTimeout(initCharts, 500);
 loadAll(); // Data last
+`;
+
+fs.writeFileSync('main.js', content, 'utf8');
