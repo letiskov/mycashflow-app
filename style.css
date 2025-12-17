@@ -104,35 +104,96 @@ body {
     justify-content: center;
 }
 
-/* --- Balance Card --- */
+/* --- Balance Card (Primary) --- */
 .balance-card {
-    padding: 0 20px;
+    padding: 20px;
 }
 
 .card-content {
     background: var(--primary-gradient);
-    border-radius: 28px;
-    padding: 30px;
-    box-shadow: 0 20px 40px rgba(10, 132, 255, 0.3);
+    border-radius: 32px;
+    padding: 25px;
+    box-shadow: 0 20px 40px rgba(10, 132, 255, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.card-content p {
-    font-size: 0.9rem;
+.dual-balance {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.balance-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+}
+
+.balance-item:last-child {
+    border-bottom: none;
+}
+
+.balance-item p {
+    font-size: 0.7rem !important;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    opacity: 0.7;
+    margin-bottom: 0 !important;
+    font-weight: 600;
+}
+
+.balance-item h1 {
+    font-size: 2.2rem !important;
+    font-weight: 800;
+    margin-bottom: 0 !important;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+/* Glass Pill Net Worth */
+.net-worth-box {
+    align-self: center;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 12px 24px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin: 10px 0;
+}
+
+.net-worth-box p {
+    font-size: 0.65rem;
     opacity: 0.8;
-    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0;
+    font-weight: 700;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    padding-right: 12px;
 }
 
-.card-content h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 25px;
+.net-worth-box h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
 }
 
 .stats-row {
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
     padding-top: 20px;
+    margin-top: 5px;
 }
 
 .stat {
@@ -665,85 +726,7 @@ input:focus {
     color: var(--text-secondary);
 }
 
-/* Dual Balance Layout - Sleek Vertical */
-.dual-balance {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 25px;
-    padding: 10px 0;
-}
-
-.balance-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 10px;
-}
-
-.balance-item:last-child {
-    border-bottom: none;
-}
-
-.balance-item p {
-    font-size: 0.7rem !important;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    opacity: 0.6;
-    margin-bottom: 0 !important;
-    font-weight: 600;
-}
-
-.balance-item h1 {
-    font-size: 1.5rem !important;
-    font-weight: 800;
-    margin-bottom: 0 !important;
-    line-height: 1;
-    letter-spacing: -0.5px;
-}
-
-.net-worth-box {
-    text-align: center;
-    margin: 5px auto 30px;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 10px 24px;
-    border-radius: 100px;
-    /* Sleek Pill */
-    display: inline-flex;
-    flex-direction: row;
-    /* Horizontal Pill */
-    align-items: center;
-    gap: 12px;
-    align-self: center;
-    width: auto;
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.net-worth-box p {
-    font-size: 0.65rem;
-    opacity: 0.7;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 0;
-    font-weight: 600;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    padding-right: 12px;
-}
-
-.net-worth-box h2 {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #fff;
-    margin: 0;
-}
-
-.card-content {
-    display: flex;
-    flex-direction: column;
-}
+/* End of financial summary section */
 
 
 .sub-stat {
