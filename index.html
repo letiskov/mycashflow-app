@@ -36,7 +36,8 @@
     </header>
 
     <!-- Scrollable Content -->
-    <main class="content-area">
+    <!-- Home View -->
+    <div id="home-view" class="view-section active-view">
       <!-- Balance Card -->
       <section class="balance-card">
         <div class="balance-label">Total Balance</div>
@@ -90,9 +91,45 @@
         <!-- Populated by JS -->
       </div>
 
-      <!-- Spacer for Bottom Nav -->
+      <!-- Spacer -->
       <div style="height: 100px;"></div>
-    </main>
+    </div>
+
+    <!-- Stats View -->
+    <div id="stats-view" class="view-section">
+      <header class="mobile-header" style="position: sticky; top: 0;">
+        <h3>Statistics</h3>
+      </header>
+      <div class="placeholder-view">
+        <i class="ri-pie-chart-2-line"></i>
+        <h3>Detailed Stats</h3>
+        <p>Coming soon in next update</p>
+      </div>
+    </div>
+
+    <!-- Wallet View -->
+    <div id="wallet-view" class="view-section">
+      <header class="mobile-header" style="position: sticky; top: 0;">
+        <h3>My Wallet</h3>
+      </header>
+      <div class="placeholder-view">
+        <i class="ri-wallet-3-line"></i>
+        <h3>Wallet Management</h3>
+        <p>Manage cards and accounts</p>
+      </div>
+    </div>
+
+    <!-- Profile View -->
+    <div id="profile-view" class="view-section">
+      <header class="mobile-header" style="position: sticky; top: 0;">
+        <h3>Profile</h3>
+      </header>
+      <div class="placeholder-view">
+        <i class="ri-user-3-line"></i>
+        <h3>User Profile</h3>
+        <p>Settings and preferences</p>
+      </div>
+    </div>
 
     <!-- Add Transaction Modal -->
     <div class="modal-overlay" id="addModal">
