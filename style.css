@@ -664,3 +664,18 @@ input:focus {
 .cat-value small {
     color: var(--text-secondary);
 }
+/* Dual Balance Layout */
+.dual-balance {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 25px;
+}
+.balance-item h1 {
+    font-size: 1.8rem !important;
+    margin-bottom: 0 !important;
+}
+.text-right {
+    text-align: right;
+}
+

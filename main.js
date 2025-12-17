@@ -32,7 +32,7 @@ async function initApp() {
     await fetchAllData();
     initCharts();
     renderAll();
-    
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(console.error);
     }
@@ -49,7 +49,7 @@ async function fetchAllData() {
 
         if (trxRes.status === 'fulfilled' && trxRes.value.ok) {
             const raw = await trxRes.value.json();
-            state.transactions = raw.map(t => ({...t, amount: parseFloat(t.amount)}));
+            state.transactions = raw.map(t => ({ ...t, amount: parseFloat(t.amount) }));
         }
 
         if (walletRes.status === 'fulfilled' && walletRes.value.ok) {
@@ -60,7 +60,7 @@ async function fetchAllData() {
             state.categories = await catRes.value.json();
             populateCategoryDropdown();
         }
-        
+
     } catch (err) {
         console.error('Fetch Error:', err);
     }
@@ -76,19 +76,29 @@ function renderAll() {
 }
 
 function renderBalance() {
-    // For the main balance, we'll show IDR by default or primary wallet
-    const mainWallet = state.wallets[0] || { currency: 'IDR' };
-    const inc = state.transactions.filter(t => t.amount > 0).reduce((a, b) => a + b.amount, 0);
-    const exp = state.transactions.filter(t => t.amount < 0).reduce((a, b) => a + Math.abs(b.amount), 0);
-    const total = inc - exp;
+    let totals = { IDR: 0, USD: 0 };
+    let incomes = { IDR: 0, USD: 0 };
+    let expenses = { IDR: 0, USD: 0 };
 
-    const elBalance = document.querySelector('.balance-amount');
+    state.transactions.forEach(t => {
+        const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || state.wallets[0] || { currency: 'IDR' };
+        const cur = wallet.currency || 'IDR';
+        if (t.amount > 0) incomes[cur] += t.amount;
+        else expenses[cur] += Math.abs(t.amount);
+        totals[cur] += t.amount;
+    });
+
+    const elIdr = document.getElementById('balance-idr');
+    const elUsd = document.getElementById('balance-usd');
     const elInc = document.getElementById('total-income');
     const elExp = document.getElementById('total-expense');
 
-    if (elBalance) elBalance.textContent = fmt(total, mainWallet.currency);
-    if (elInc) elInc.textContent = fmt(inc, mainWallet.currency);
-    if (elExp) elExp.textContent = fmt(exp, mainWallet.currency);
+    if (elIdr) elIdr.textContent = fmt(totals.IDR, 'IDR');
+    if (elUsd) elUsd.textContent = fmt(totals.USD, 'USD');
+
+    // Show IDR stats in the small bottom row for now
+    if (elInc) elInc.textContent = fmt(incomes.IDR, 'IDR');
+    if (elExp) elExp.textContent = fmt(expenses.IDR, 'IDR');
 }
 
 function renderTransactions() {
@@ -104,7 +114,7 @@ function renderTransactions() {
         const isExp = t.amount < 0;
         // Try to match trx with wallet to get correct currency
         const wallet = state.wallets.find(w => String(w.id) === String(t.wallet_id)) || { currency: 'IDR' };
-        
+
         return `
             <div class="trx-item" style="--i: ${idx}" data-id="${t.id}">
                 <div class="trx-left">
@@ -242,12 +252,12 @@ function setupInputFormatting() {
     amountInput.addEventListener('input', (e) => {
         // Remove everything except numbers
         let value = e.target.value.replace(/[^0-9]/g, '');
-        
+
         if (value) {
             // Add dots as thousand separators
-            value = parseInt(value).toLocaleString('id-ID'); 
+            value = parseInt(value).toLocaleString('id-ID');
         }
-        
+
         e.target.value = value;
     });
 
@@ -301,11 +311,11 @@ async function saveTransaction() {
     // Clean currency formatting (remove dots) before parsing
     const rawAmount = document.getElementById('trxAmount').value.replace(/\./g, '');
     const amt = parseFloat(rawAmount);
-    
+
     const title = document.getElementById('trxTitle').value;
     const catName = document.getElementById('trxCategory').value;
     const walletId = document.getElementById('trxWallet').value;
-    
+
     const catObj = state.categories.find(c => c.name === catName);
     const finalAmt = (catObj && catObj.type === 'income') ? Math.abs(amt) : -Math.abs(amt);
 
@@ -374,9 +384,9 @@ async function deleteTransaction(id) {
 // --- 8. UTILS & CHARTS ---
 function fmt(num, currency = 'IDR') {
     // Handling USD vs IDR correctly
-    const options = { 
-        style: 'currency', 
-        currency: currency, 
+    const options = {
+        style: 'currency',
+        currency: currency,
         maximumFractionDigits: currency === 'IDR' ? 0 : 2
     };
     return new Intl.NumberFormat(currency === 'IDR' ? 'id-ID' : 'en-US', options).format(num);
@@ -400,7 +410,7 @@ function getCategoryIcon(catName) {
 function populateCategoryDropdown() {
     const select = document.getElementById('trxCategory');
     if (!select) return;
-    select.innerHTML = state.categories.map(c => 
+    select.innerHTML = state.categories.map(c =>
         `<option value="${c.name}">${c.type === 'income' ? '💰' : '💸'} ${c.name}</option>`
     ).join('');
 }
@@ -414,7 +424,7 @@ function initCharts() {
                 labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 datasets: [{
                     label: 'Income',
-                    data: [0,0,0,0,0,0,0],
+                    data: [0, 0, 0, 0, 0, 0, 0],
                     borderColor: '#30D158',
                     backgroundColor: 'rgba(48, 209, 88, 0.1)',
                     fill: true,
@@ -425,9 +435,9 @@ function initCharts() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { 
-                    x: { grid: { display: false } }, 
-                    y: { display: false } 
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { display: false }
                 }
             }
         });
@@ -460,7 +470,7 @@ function updateCharts() {
         const expenses = state.transactions.filter(t => t.amount < 0);
         const cats = {};
         expenses.forEach(t => cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount));
-        
+
         charts.expense.data.labels = Object.keys(cats);
         charts.expense.data.datasets[0].data = Object.values(cats);
         charts.expense.update();
