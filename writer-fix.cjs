@@ -1,4 +1,7 @@
-import './style.css'
+
+const fs = require('fs');
+
+const content = `import './style.css'
 import '@khmyznikov/pwa-install';
 import Chart from 'chart.js/auto'
 
@@ -85,7 +88,7 @@ async function loadCats() {
         const select = document.getElementById('trxCategory');
         if(select && categories.length > 0) {
             select.innerHTML = categories.map(c => 
-                `<option value="${c.name}">${c.name}</option>`
+                \`<option value="\${c.name}">\${c.name}</option>\`
             ).join('');
         }
     } catch(e) {}
@@ -103,9 +106,9 @@ function render() {
     if(document.querySelector('.balance-amount')) 
         document.querySelector('.balance-amount').textContent = fmt(total);
     if(document.querySelector('.stat.up span'))
-        document.querySelector('.stat.up span').textContent = `+${(inc/1000000).toFixed(1)}jt Inc`;
+        document.querySelector('.stat.up span').textContent = \`+\${(inc/1000000).toFixed(1)}jt Inc\`;
     if(document.querySelector('.stat.down span'))
-        document.querySelector('.stat.down span').textContent = `-${(exp/1000000).toFixed(1)}jt Exp`;
+        document.querySelector('.stat.down span').textContent = \`-\${(exp/1000000).toFixed(1)}jt Exp\`;
 
     // Charts
     if(chart1) {
@@ -121,30 +124,30 @@ function render() {
         
         const list = document.getElementById('statsList');
         if(list) {
-            list.innerHTML = Object.entries(cats).map(([k,v]) => `
+            list.innerHTML = Object.entries(cats).map(([k,v]) => \`
                 <div class="glass-card stat-row">
-                    <div class="stat-cat"><div class="stat-color" style="background:#FF453A"></div><span>${k}</span></div>
-                    <div><b>${fmt(v)}</b><div style="font-size:0.8rem;opacity:0.6">${((v/exp)*100).toFixed(0)}%</div></div>
+                    <div class="stat-cat"><div class="stat-color" style="background:#FF453A"></div><span>\${k}</span></div>
+                    <div><b>\${fmt(v)}</b><div style="font-size:0.8rem;opacity:0.6">\${((v/exp)*100).toFixed(0)}%</div></div>
                 </div>
-            `).join('');
+            \`).join('');
         }
     }
     
     // TRX List
     const list = document.getElementById('transactionList');
     if(list) {
-        list.innerHTML = transactions.map((t,i) => `
-            <div class="trx-item" onclick="deleteTrx('${t.id}')" style="--i: ${i}">
+        list.innerHTML = transactions.map((t,i) => \`
+            <div class="trx-item" onclick="deleteTrx('\${t.id}')" style="--i: \${i}">
                 <div class="trx-left">
-                     <div class="trx-icon" style="color:${t.amount<0?'#FF9F0A':'#30D158'}"><i class="ri-bill-line"></i></div>
+                     <div class="trx-icon" style="color:\${t.amount<0?'#FF9F0A':'#30D158'}"><i class="ri-bill-line"></i></div>
                      <div class="trx-info">
-                        <h4>${t.title}</h4>
-                        <p>${t.category} • ${new Date(t.date).toLocaleDateString()}</p>
+                        <h4>\${t.title}</h4>
+                        <p>\${t.category} • \${new Date(t.date).toLocaleDateString()}</p>
                      </div>
                 </div>
-                <div class="trx-amount" style="color:${t.amount<0?'#fff':'#30D158'}">${fmt(t.amount)}</div>
+                <div class="trx-amount" style="color:\${t.amount<0?'#fff':'#30D158'}">\${fmt(t.amount)}</div>
             </div>
-        `).join('');
+        \`).join('');
     }
 }
 
@@ -169,19 +172,19 @@ function renderWallets() {
         container.appendChild(listData);
     }
     
-    listData.innerHTML = wallets.map(w => `
-        <div class="wallet-card" onclick="editWallet('${w.id}', '${w.name}', ${w.balance})" style="background: ${w.color||'linear-gradient(135deg, #333, #000)'}; cursor: pointer;">
+    listData.innerHTML = wallets.map(w => \`
+        <div class="wallet-card" onclick="editWallet('\${w.id}', '\${w.name}', \${w.balance})" style="background: \${w.color||'linear-gradient(135deg, #333, #000)'}; cursor: pointer;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="card-logo">${w.name}</span>
+                <span class="card-logo">\${w.name}</span>
                 <i class="ri-wallet-3-line card-icon"></i>
             </div>
             <div class="card-label">Balance</div>
-            <div class="card-balance">${fmt(w.balance)}</div>
-            <div class="card-number">${w.number || '****'}</div>
+            <div class="card-balance">\${fmt(w.balance)}</div>
+            <div class="card-number">\${w.number || '****'}</div>
         </div>
-    `).join('') + `
+    \`).join('') + \`
     <button onclick="alert('Add function coming soon')" style="margin-top:20px; width:100%; padding:15px; border-radius:20px; border:1px dashed #555; background:none; color:#888;">+ Add New Wallet</button>
-    `;
+    \`;
 }
 
 // --- Actions ---
@@ -212,7 +215,7 @@ window.editWallet = (id, name, bal) => {
 
 window.deleteTrx = async (id) => {
     if(confirm('Delete?')) {
-        await fetch(`${API.TRX}?id=${id}`, {method:'DELETE'});
+        await fetch(\`\${API.TRX}?id=\${id}\`, {method:'DELETE'});
         loadAll();
     }
 }
@@ -223,7 +226,7 @@ function fmt(n) { return new Intl.NumberFormat('id-ID', {style:'currency', curre
 function injectEditWalletModal() {
     if(document.getElementById('walletModal')) return;
     const div = document.createElement('div');
-    div.innerHTML = `
+    div.innerHTML = \`
     <div class="modal-overlay" id="walletModal">
       <div class="glass-card" style="width: 90%; max-width: 400px; padding: 24px; margin: auto;">
         <h3 style="margin-bottom: 20px;">Edit Wallet</h3>
@@ -243,7 +246,7 @@ function injectEditWalletModal() {
             </div>
         </form>
       </div>
-    </div>`;
+    </div>\`;
     document.body.appendChild(div);
 }
 
@@ -312,3 +315,6 @@ document.querySelectorAll('.action-btn').forEach(btn => {
 
 // Start
 loadAll();
+`;
+
+fs.writeFileSync('main.js', content, 'utf8');
