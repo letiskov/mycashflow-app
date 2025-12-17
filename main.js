@@ -318,7 +318,8 @@ async function saveTransaction() {
         title,
         amount: finalAmt,
         category: catName,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        walletId: walletId
     };
 
     try {
