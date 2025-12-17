@@ -19,12 +19,12 @@ Chart.defaults.color = '#94a3b8';
 Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
 Chart.defaults.font.family = "-apple-system, 'SF Pro Display', sans-serif";
 
-let cashflowChart; 
+let cashflowChart;
 
 function initChart() {
     const canvas = document.getElementById('cashflowChart');
-    if(!canvas) return;
-    
+    if (!canvas) return;
+
     const trendCtx = canvas.getContext('2d');
     cashflowChart = new Chart(trendCtx, {
         type: 'bar',
@@ -86,13 +86,13 @@ function render() {
 
     // 2. Update UI
     const balanceEl = document.querySelector('.balance-amount');
-    if(balanceEl) balanceEl.textContent = formatCurrency(total);
-    
+    if (balanceEl) balanceEl.textContent = formatCurrency(total);
+
     const incomeEl = document.querySelector('.stat.up span');
-    if(incomeEl) incomeEl.textContent = `+${(income / 1000000).toFixed(1)}jt Income`;
-    
+    if (incomeEl) incomeEl.textContent = `+${(income / 1000000).toFixed(1)}jt Income`;
+
     const expenseEl = document.querySelector('.stat.down span');
-    if(expenseEl) expenseEl.textContent = `-${(expense / 1000000).toFixed(1)}jt Expense`;
+    if (expenseEl) expenseEl.textContent = `-${(expense / 1000000).toFixed(1)}jt Expense`;
 
     // 3. Update Chart
     if (cashflowChart) {
@@ -102,12 +102,12 @@ function render() {
 
     // 4. Update List
     const list = document.getElementById('transactionList');
-    if(list) {
+    if (list) {
         list.innerHTML = transactions.slice().reverse().map((t, index) => {
             const isExp = t.amount < 0;
             const color = isExp ? '#fff' : '#30D158';
             const iconColor = t.category === 'Income' ? '#30D158' : '#FF9F0A';
-            
+
             return `
         <div class="trx-item" onclick="deleteTrx(${t.id})" style="--i: ${index}">
         <div class="trx-left">
@@ -136,10 +136,10 @@ const fab = document.querySelector('.nav-fab');
 const closeBtn = document.getElementById('closeModal');
 const form = document.getElementById('trxForm');
 
-if(fab) fab.addEventListener('click', () => modal.classList.add('active'));
-if(closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+if (fab) fab.addEventListener('click', () => modal.classList.add('active'));
+if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
 
-if(form) form.addEventListener('submit', (e) => {
+if (form) form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const amountVal = parseFloat(document.getElementById('trxAmount').value);
@@ -197,10 +197,18 @@ function isInStandaloneMode() {
 
 if (isIOS() && !isInStandaloneMode()) {
     const prompt = document.getElementById('installPrompt');
+    const closeStartBtn = document.getElementById('closeInstallBtn');
+
     if (prompt) {
         setTimeout(() => {
             prompt.classList.add('visible');
-        }, 2000); 
+        }, 2000);
+
+        if (closeStartBtn) {
+            closeStartBtn.addEventListener('click', () => {
+                prompt.classList.remove('visible');
+            });
+        }
     }
 }
 
