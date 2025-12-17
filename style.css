@@ -729,6 +729,101 @@ input:focus {
 /* End of financial summary section */
 
 
+/* --- Install Banner --- */
+.install-banner {
+    padding: 0 20px;
+    margin-top: 10px;
+    display: none;
+    /* Hidden by default if already PWA */
+}
+
+.banner-content {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.banner-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.banner-text {
+    flex: 1;
+}
+
+.banner-text h4 {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+.banner-text p {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.banner-btn {
+    background: white;
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Install Guide Modal */
+.guide-step {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.step-num {
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.step-info h5 {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.step-info p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.ios-icon-inline {
+    background: #2C2C2E;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 1rem;
+    vertical-align: middle;
+}
+
 .sub-stat {
     display: block;
     font-size: 0.7rem;

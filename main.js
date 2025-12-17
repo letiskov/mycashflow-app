@@ -37,10 +37,22 @@ async function initApp() {
     initCharts();
     renderAll();
 
+    // Check if installed (standalone mode)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const banner = document.getElementById('pwa-banner');
+    if (banner && !isStandalone) {
+        banner.style.display = 'block';
+    }
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(console.error);
     }
 }
+
+window.openInstallGuide = () => {
+    const modal = document.getElementById('installGuideModal');
+    if (modal) modal.classList.add('active');
+};
 
 // --- 3. DATA PERSISTENCE ---
 async function fetchProfiles() {
@@ -133,6 +145,7 @@ function renderProfileMenu() {
         </div>
 
         <div class="menu-list">
+          <button class="menu-item" onclick="openInstallGuide()"><i class="ri-download-line" style="color:var(--primary-color)"></i> Install Application <i class="ri-arrow-right-s-line"></i></button>
           <button class="menu-item"><i class="ri-settings-4-line"></i> Settings <i class="ri-arrow-right-s-line"></i></button>
           <button class="menu-item logout" onclick="alert('Logged out!')"><i class="ri-logout-box-r-line"></i> Logout</button>
         </div>

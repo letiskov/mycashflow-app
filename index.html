@@ -77,6 +77,17 @@
         </div>
       </section>
 
+      <div class="install-banner" id="pwa-banner">
+        <div class="banner-content">
+          <div class="banner-icon"><i class="ri-download-cloud-2-line"></i></div>
+          <div class="banner-text">
+            <h4>Install MyCashFlow</h4>
+            <p>Add to your home screen for the full experience.</p>
+          </div>
+          <button class="banner-btn" onclick="openInstallGuide()">Install</button>
+        </div>
+      </div>
+
       <div class="quick-actions">
         <button class="action-btn" data-preset="Transfer">
           <div class="icon-box blue"><i class="ri-exchange-dollar-line"></i></div>
@@ -262,7 +273,45 @@
       </div>
     </div>
 
-    <!-- PWA Install Component -->
+    <!-- Modal: Install Guide -->
+    <div class="modal-overlay" id="installGuideModal">
+      <div class="center-dialog">
+        <div class="glass-card dialog-box" style="text-align: center;">
+          <img src="/apple-touch-icon.png"
+            style="width: 70px; border-radius: 18px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+          <h3 style="margin-bottom: 25px;">Install MyCashFlow</h3>
+
+          <div class="guide-step">
+            <div class="step-num">1</div>
+            <div class="step-info">
+              <h5>Tap Share Button</h5>
+              <p>Look for the share icon <span class="ios-icon-inline"><i class="ri-share-box-line"></i></span> in your
+                browser's bottom navigation.</p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-num">2</div>
+            <div class="step-info">
+              <h5>Scroll & Add</h5>
+              <p>Scroll down and select <b>"Add to Home Screen"</b> <span class="ios-icon-inline"><i
+                    class="ri-add-box-line"></i></span> from the menu.</p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-num">3</div>
+            <div class="step-info">
+              <h5>Start Using</h5>
+              <p>Launch the app from your home screen for a full-screen, premium experience.</p>
+            </div>
+          </div>
+
+          <button class="primary-btn close-modal-btn"
+            style="background: var(--surface-color); color: white; box-shadow: none; margin-top: 10px;">Got it!</button>
+        </div>
+      </div>
+    </div>
     <pwa-install id="ios-pwa-install" manual-apple="true"></pwa-install>
 
   </div>
