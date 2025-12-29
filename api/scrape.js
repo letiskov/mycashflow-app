@@ -159,6 +159,14 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
 
             await pool.query("UPDATE gateways SET pending_otp = NULL WHERE platform = 'BCA'");
 
+            // == SESSION PERSISTENCE (LOAD) ==
+            if (gateway.session_data && gateway.session_data.cookies) {
+                console.log('[MyBCA] Loading saved session cookies...');
+                sendProgress('Mengembalikan ingatan sesi browser lama...');
+                await page.setCookie(...gateway.session_data.cookies);
+            }
+            // ================================
+
             await page.goto('https://mybca.bca.co.id/auth/login', { waitUntil: 'networkidle2' });
 
             // CHECK ALREADY LOGGED IN (Hybrid Mode)
@@ -248,6 +256,20 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
             // Tunggu sampe masuk dashboard
             sendProgress('Login berhasil! Sedang mencari informasi saldo...');
             await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 30000 }).catch(() => { });
+
+            // == SESSION PERSISTENCE (SAVE) ==
+            try {
+                const currentCookies = await page.cookies();
+                // Simpan ke DB biar besok gak perlu OTP lagi
+                await pool.query(
+                    "UPDATE gateways SET session_data = $1 WHERE platform = 'BCA'",
+                    [JSON.stringify({ cookies: currentCookies })]
+                );
+                console.log('[MyBCA] Session cookies saved.');
+            } catch (err) {
+                console.warn('[MyBCA] Failed to save session:', err);
+            }
+            // ================================
             await new Promise(r => setTimeout(r, 4000)); // Tunggu rendering home selesai
 
             // == LOGIC DELETE SALDO (BALANCE) ==

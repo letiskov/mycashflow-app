@@ -250,30 +250,181 @@ export const PGDashboard = {
     },
 
     renderMutations(mutations, containerId, full = false) {
+        // Jika ini view full (Halaman Mutasi), render Header & Controls dulu
+        if (full) {
+            const viewContainer = document.getElementById('view-mutasi');
+            const gateway = this.lastData?.gateways?.find(g => g.platform === 'BCA');
+
+            // 1. Render Header Control Panel (Mirip Screenshot)
+            const headerHTML = `
+                <div class="gateway-panel">
+                    <div class="gateway-info">
+                        <div class="gw-brand">
+                            <span class="gw-logo">BCA</span>
+                        </div>
+                        <div class="gw-details">
+                            <h3>${gateway?.account_info?.account_name || 'Menunggu Data...'}</h3>
+                            <div class="gw-sub">
+                                <span>${gateway?.account_info?.account_number || '-'}</span> • 
+                                <span class="status-badge ${gateway?.status === 'CONNECTED' ? 'active' : 'inactive'}">
+                                    ${gateway?.status === 'CONNECTED' ? 'Connected' : 'Disconnected'}
+                                </span>
+                            </div>
+                            <div class="gw-balance">
+                                <span class="label">Balance:</span>
+                                <span class="amount">${this.fmt(gateway?.balance || 0)}</span>
+                            </div>
+                            <div class="gw-meta">
+                                <small>Last Update: ${gateway?.last_updated ? new Date(gateway.last_updated).toLocaleString('id-ID') : '-'}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gateway-actions">
+                        <div class="action-row">
+                            <button class="btn btn-primary" onclick="window.PGDashboard.triggerScrape('balance')">
+                                <i class="ri-refresh-line"></i> Refresh Balance
+                            </button>
+                            <button class="btn btn-primary" onclick="window.PGDashboard.triggerScrape('mutasi')">
+                                <i class="ri-file-list-3-line"></i> Get Mutasi From Bank
+                            </button>
+                        </div>
+                        <div class="action-row">
+                             <a href="/statement.pdf" target="_blank" class="btn btn-secondary">
+                                <i class="ri-download-cloud-line"></i> Export CSV
+                            </a>
+                            <button class="btn btn-danger" onclick="if(confirm('Logout akun BCA? Robot harus login ulang nanti.')) window.PGDashboard.logoutGateway('BCA')">
+                                <i class="ri-logout-box-r-line"></i> Logout Bank Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="date-group">
+                        <input type="date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+                        <span>s/d</span>
+                        <input type="date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+                    </div>
+                    <div class="search-group">
+                        <input type="text" placeholder="Search Description / Ref No..." class="form-input search-box">
+                    </div>
+                </div>
+            `;
+
+            // Inject Header sebelum table-card
+            let panelContainer = document.getElementById('gateway-header-container');
+            if (!panelContainer) {
+                panelContainer = document.createElement('div');
+                panelContainer.id = 'gateway-header-container';
+                const tableCard = viewContainer.querySelector('.table-card');
+                viewContainer.insertBefore(panelContainer, tableCard);
+            }
+            panelContainer.innerHTML = headerHTML;
+        }
+
+        // 2. Render Table Body
         const container = document.getElementById(containerId);
         if (!container) return;
 
+        // Header Table Khusus View Mutasi (Split Debit/Kredit)
+        if (full) {
+            const tableHead = container.closest('table').querySelector('thead');
+            if (tableHead) {
+                tableHead.innerHTML = `
+                    <tr>
+                        <th width="15%">Date / Time</th>
+                        <th width="40%">Description</th>
+                        <th width="15%" class="text-right">Debit (Keluar)</th>
+                        <th width="15%" class="text-right">Credit (Masuk)</th>
+                        <th width="15%" class="text-right">Balance</th>
+                    </tr>
+                `;
+            }
+        }
+
         if (mutations.length === 0) {
-            container.innerHTML = `<tr><td colspan="${full ? 6 : 5}" style="text-align: center; padding: 20px;">Belum ada mutasi</td></tr>`;
+            container.innerHTML = `<tr><td colspan="${full ? 5 : 5}" style="text-align: center; padding: 40px; color: var(--text-dim);">Belum ada data mutasi</td></tr>`;
             return;
         }
 
         container.innerHTML = mutations.map(m => {
             const date = new Date(m.date);
-            const timeStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ', ' +
-                date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+            const dateStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-            return `
-                <tr>
-                    <td style="white-space: nowrap;">${timeStr}</td>
-                    <td><span class="badge ${m.type.toLowerCase()}">${m.type}</span></td>
-                    <td style="min-width: 200px; word-wrap: break-word; white-space: normal; line-height: 1.4;">${m.merchant || '-'}</td>
-                    <td>${m.platform}</td>
-                    <td style="color: ${m.type === 'MASUK' ? '#10b981' : 'white'}; white-space: nowrap; font-weight: 600;">${m.type === 'MASUK' ? '+' : ''} ${this.fmt(m.amount)}</td>
-                    ${full ? '<td><span class="badge masuk">Berhasil</span></td>' : ''}
-                </tr>
-            `;
+            // Logic Debit/Credit
+            const isMasuk = m.type === 'MASUK';
+            const debit = !isMasuk ? this.fmt(m.amount) : '0.00';
+            const credit = isMasuk ? this.fmt(m.amount) : '0.00';
+
+            // Style Description
+            const merchant = m.merchant || '-';
+            const platformBadge = `<span class="badge ${m.platform?.toLowerCase()}">${m.platform}</span>`;
+
+            if (full) {
+                return `
+                    <tr>
+                        <td style="white-space:nowrap">
+                            <div style="font-weight:600">${dateStr}</div>
+                            <small style="color:var(--text-dim)">${timeStr}</small>
+                        </td>
+                        <td>
+                            <div style="font-weight:500; margin-bottom:4px;">${merchant}</div>
+                            <small style="color:var(--text-dim)">Reff: ${m.id} • ${platformBadge}</small>
+                        </td>
+                        <td class="text-right" style="color: var(--danger-color); font-family:var(--font-heading);">${!isMasuk ? debit : '-'}</td>
+                        <td class="text-right" style="color: var(--success-color); font-family:var(--font-heading);">${isMasuk ? credit : '-'}</td>
+                        <td class="text-right" style="font-family:var(--font-heading); color:var(--text-secondary);">-</td>
+                    </tr>
+                `;
+            } else {
+                // Widget Dashboard (Compact)
+                return `
+                    <tr>
+                        <td style="white-space: nowrap;">${timeStr}</td>
+                        <td><span class="badge ${m.type.toLowerCase()}">${m.type}</span></td>
+                        <td style="min-width: 200px; word-wrap: break-word; white-space: normal; line-height: 1.4;">${merchant}</td>
+                        <td>${m.platform}</td>
+                        <td style="color: ${isMasuk ? '#10b981' : 'white'}; font-weight: 600;">${isMasuk ? '+' : ''} ${this.fmt(m.amount)}</td>
+                    </tr>
+                `;
+            }
         }).join('');
+    },
+
+    // 3. Tambahkan Handler Baru
+    triggerScrape(mode) {
+        // Reuse logic Cloud Scrape yang sudah ada
+        if (mode === 'balance' || mode === 'mutasi') {
+            this.runCloudScrape();
+
+            // Visual feedback
+            const btn = event?.currentTarget;
+            if (btn) {
+                const ogHTML = btn.innerHTML;
+                btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Processing...`;
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = ogHTML;
+                }, 10000);
+            }
+        } else {
+            console.warn('Mode tidak dikenal:', mode);
+        }
+    },
+
+    logoutGateway(platform) {
+        // Implementasi logout (hapus credentials/session)
+        fetch('/api/credentials', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ platform })
+        }).then(() => {
+            alert('Akun BCA berhasil logout.');
+            this.fetchStats(); // Refresh UI
+        });
     },
 
     renderGatewayDetails(gateways) {

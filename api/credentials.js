@@ -47,5 +47,25 @@ export default async function handler(req, res) {
         }
     }
 
+    if (req.method === 'DELETE') {
+        const client = await pool.connect();
+        try {
+            const { platform } = req.body;
+            // Clear account info but keep balance for history? Or clear all?
+            // "Logout" usually means clearing credentials.
+            await client.query(
+                `UPDATE gateways 
+                 SET account_info = NULL, status = 'DISCONNECTED', pending_otp = NULL 
+                 WHERE platform = $1 AND profile_id = $2`,
+                [platform, 1]
+            );
+            return res.json({ success: true, message: 'Credentials cleared' });
+        } catch (e) {
+            return res.status(500).json({ error: e.message });
+        } finally {
+            client.release();
+        }
+    }
+
     return res.status(405).json({ error: 'Method not allowed' });
 }
