@@ -13,7 +13,6 @@
         }
     ],
     "env": {
-        "BROWSERLESS_TOKEN": "270f907b-8397-4089-9b1a-0de5f5caf8d0",
         "ENCRYPTION_KEY": "mySuperSecretKeyForEncryptionRunningInVercel123!",
         "DATABASE_URL": "postgresql://neondb_owner:npg_Xf9lsAxp6LEG@ep-quiet-bonus-a1817lwt-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
     }
