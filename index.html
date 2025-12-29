@@ -5,317 +5,356 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>MyCashFlow - Premium Finance</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#1a1a1c">
+  <title>NXPAY - Payment Gateway Admin</title>
 
   <!-- Fonts & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css?v=1.2">
 </head>
 
 <body>
-  <div id="app">
-    <!-- View: Home -->
-    <div id="home-view" class="view-section active-view">
-      <header class="main-header">
-        <div class="user-profile">
-          <div class="avatar">
-            <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User">
-          </div>
-          <div class="welcome">
-            <p>Good Morning,</p>
-            <h3>Ready for today?</h3>
-          </div>
-        </div>
-        <button class="notif-btn"><i class="ri-notification-3-line"></i></button>
-      </header>
-
-      <section class="balance-card">
-        <div class="card-content">
-          <div class="dual-balance">
-            <div class="balance-item">
-              <p>Total IDR</p>
-              <h1 id="balance-idr">Rp 0</h1>
-            </div>
-            <div class="balance-item text-right">
-              <p>Total USD</p>
-              <h1 id="balance-usd">$ 0</h1>
-            </div>
-          </div>
-          <div class="net-worth-box">
-            <p>Overall Net Worth</p>
-            <h2 id="total-net-worth">Approx. Rp 0</h2>
-          </div>
-          <div class="stats-row">
-            <div class="stat up">
-              <div class="icon-circle"><i class="ri-arrow-up-line"></i></div>
-              <div class="stat-info">
-                <small>Income</small>
-                <div id="inc-container">
-                  <span id="total-income-idr">Rp 0</span>
-                  <span id="total-income-usd" class="sub-stat">$ 0</span>
-                </div>
-              </div>
-            </div>
-            <div class="stat down">
-              <div class="icon-circle"><i class="ri-arrow-down-line"></i></div>
-              <div class="stat-info">
-                <small>Expense</small>
-                <div id="exp-container">
-                  <span id="total-expense-idr">Rp 0</span>
-                  <span id="total-expense-usd" class="sub-stat">$ 0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="install-banner" id="pwa-banner">
-        <div class="banner-content">
-          <div class="banner-icon"><i class="ri-download-cloud-2-line"></i></div>
-          <div class="banner-text">
-            <h4>Install MyCashFlow</h4>
-            <p>Add to your home screen for the full experience.</p>
-          </div>
-          <button class="banner-btn" onclick="openInstallGuide()">Install</button>
-        </div>
-      </div>
-
-      <div class="quick-actions">
-        <button class="action-btn" data-preset="Transfer">
-          <div class="icon-box blue"><i class="ri-exchange-dollar-line"></i></div>
-          <span>Transfer</span>
-        </button>
-        <button class="action-btn" data-preset="Topup">
-          <div class="icon-box green"><i class="ri-add-circle-line"></i></div>
-          <span>Topup</span>
-        </button>
-        <button class="action-btn" data-preset="Bill">
-          <div class="icon-box orange"><i class="ri-bill-line"></i></div>
-          <span>Bill</span>
-        </button>
-        <button class="action-btn" id="more-actions">
-          <div class="icon-box purple"><i class="ri-apps-2-line"></i></div>
-          <span>More</span>
-        </button>
-      </div>
-
-      <section class="chart-section">
-        <div class="chart-header">
-          <h3>Cashflow Trend</h3>
-        </div>
-        <div class="chart-wrapper">
-          <canvas id="cashflowChart"></canvas>
-        </div>
-      </section>
-
-      <section class="recent-transactions">
-        <div class="section-header">
-          <h3>Recent Transactions</h3>
-          <a href="#" id="view-all-trx">View All</a>
-        </div>
-        <div class="transaction-list" id="transactionList">
-          <!-- Populated by JS -->
-          <div class="loading-state">Loading data...</div>
-        </div>
-      </section>
-
-      <div class="safe-area-spacer"></div>
+  <!-- Login Overlay -->
+  <div id="login-overlay"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="card" style="width: 320px; text-align: center;">
+      <div class="logo-box" style="margin: 0 auto 20px;">NX</div>
+      <h2 style="margin-bottom: 10px;">Security Access</h2>
+      <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px;">Silahkan masukkan PIN Akses lo.</p>
+      <input type="password" id="inp-pin-akses" placeholder="••••••"
+        style="width: 100%; text-align: center; font-size: 1.5rem; letter-spacing: 5px; margin-bottom: 20px;">
+      <button class="btn btn-primary" id="btn-login-dashboard" style="width: 100%">Masuk Dashboard</button>
     </div>
-
-    <!-- View: Stats -->
-    <div id="stats-view" class="view-section">
-      <header class="header-simple">
-        <h2>Analytics</h2>
-      </header>
-      <div class="analytics-content" style="padding: 20px;">
-        <div class="glass-card chart-card">
-          <h4>Spending by Category</h4>
-          <div style="height: 250px; position: relative; margin-top: 15px;">
-            <canvas id="expenseChart"></canvas>
-          </div>
-        </div>
-        <div id="statsList" class="stats-breakdown">
-          <!-- JS -->
-        </div>
-      </div>
-      <div class="safe-area-spacer"></div>
-    </div>
-
-    <!-- View: Wallet -->
-    <div id="wallet-view" class="view-section">
-      <header class="header-simple">
-        <h2>My Wallets</h2>
-        <button class="add-wallet-btn"><i class="ri-add-line"></i></button>
-      </header>
-      <div id="walletList" class="wallet-list-container">
-        <!-- JS -->
-      </div>
-      <div class="safe-area-spacer"></div>
-    </div>
-
-    <!-- View: Profile -->
-    <div id="profile-view" class="view-section">
-      <header class="header-simple">
-        <h2>Profile</h2>
-      </header>
-      <div class="profile-content" style="padding: 20px;">
-        <div class="glass-card user-info-card">
-          <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128" alt="Avatar">
-          <h3>Personal Account</h3>
-          <p>user@example.com</p>
-        </div>
-        <div class="menu-list">
-          <button class="menu-item"><i class="ri-settings-4-line"></i> Settings <i
-              class="ri-arrow-right-s-line"></i></button>
-          <button class="menu-item"><i class="ri-shield-user-line"></i> Privacy <i
-              class="ri-arrow-right-s-line"></i></button>
-          <button class="menu-item"><i class="ri-question-line"></i> Support <i
-              class="ri-arrow-right-s-line"></i></button>
-          <button class="menu-item logout" onclick="alert('Logged out!')"><i class="ri-logout-box-r-line"></i>
-            Logout</button>
-        </div>
-      </div>
-      <div class="safe-area-spacer"></div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-      <div class="nav-item active" data-tab="home">
-        <i class="ri-home-5-line"></i>
-        <span>Home</span>
-      </div>
-      <div class="nav-item" data-tab="stats">
-        <i class="ri-pie-chart-2-line"></i>
-        <span>Stats</span>
-      </div>
-      <div class="nav-fab" id="open-add-modal">
-        <i class="ri-add-line"></i>
-      </div>
-      <div class="nav-item" data-tab="wallet">
-        <i class="ri-wallet-3-line"></i>
-        <span>Wallet</span>
-      </div>
-      <div class="nav-item" data-tab="profile">
-        <i class="ri-user-3-line"></i>
-        <span>Profile</span>
-      </div>
-    </nav>
-
-    <!-- Modal: Add Transaction -->
-    <div class="modal-overlay" id="addTrxModal">
-      <div class="bottom-sheet">
-        <div class="sheet-header">
-          <div class="handle"></div>
-          <div class="header-content">
-            <h3>New Transaction</h3>
-            <button class="close-modal-btn"><i class="ri-close-line"></i></button>
-          </div>
-        </div>
-        <div class="sheet-body">
-          <form id="trxForm">
-            <div class="form-group">
-              <label>Amount (IDR)</label>
-              <input type="number" id="trxAmount" placeholder="0" required autofocus>
-            </div>
-            <div class="form-group">
-              <label>Description</label>
-              <input type="text" id="trxTitle" placeholder="e.g. Lunch with friends" required>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Category</label>
-                <select id="trxCategory">
-                  <!-- JS -->
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Wallet</label>
-                <select id="trxWallet">
-                  <!-- JS -->
-                </select>
-              </div>
-            </div>
-            <button type="submit" class="primary-btn">Save Transaction</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Edit Wallet -->
-    <div class="modal-overlay" id="editWalletModal">
-      <div class="center-dialog">
-        <div class="glass-card dialog-box">
-          <h3>Edit Wallet</h3>
-          <form id="walletForm">
-            <input type="hidden" id="editWalletId">
-            <div class="form-group">
-              <label>Wallet Name</label>
-              <input type="text" id="editWalletName" required>
-            </div>
-            <div class="form-group">
-              <label>Balance</label>
-              <input type="number" id="editWalletBalance" required>
-            </div>
-            <div class="dialog-actions">
-              <button type="button" class="secondary-btn cancel-wallet-btn">Cancel</button>
-              <button type="submit" class="primary-btn">Save Changes</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Install Guide -->
-    <div class="modal-overlay" id="installGuideModal">
-      <div class="center-dialog">
-        <div class="glass-card dialog-box" style="text-align: center;">
-          <img src="/apple-touch-icon.png"
-            style="width: 70px; border-radius: 18px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
-          <h3 style="margin-bottom: 25px;">Install MyCashFlow</h3>
-
-          <div class="guide-step">
-            <div class="step-num">1</div>
-            <div class="step-info">
-              <h5>Tap Share Button</h5>
-              <p>Look for the share icon <span class="ios-icon-inline"><i class="ri-share-box-line"></i></span> in your
-                browser's bottom navigation.</p>
-            </div>
-          </div>
-
-          <div class="guide-step">
-            <div class="step-num">2</div>
-            <div class="step-info">
-              <h5>Scroll & Add</h5>
-              <p>Scroll down and select <b>"Add to Home Screen"</b> <span class="ios-icon-inline"><i
-                    class="ri-add-box-line"></i></span> from the menu.</p>
-            </div>
-          </div>
-
-          <div class="guide-step">
-            <div class="step-num">3</div>
-            <div class="step-info">
-              <h5>Start Using</h5>
-              <p>Launch the app from your home screen for a full-screen, premium experience.</p>
-            </div>
-          </div>
-
-          <button class="primary-btn close-modal-btn"
-            style="background: var(--surface-color); color: white; box-shadow: none; margin-top: 10px;">Got it!</button>
-        </div>
-      </div>
-    </div>
-    <pwa-install id="ios-pwa-install" manual-apple="true"></pwa-install>
-
   </div>
-  <script type="module" src="/main.js"></script>
+
+  <div id="app" class="admin-layout" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-box">NX</div>
+        <div class="brand-text">
+          <h1>BCA Admin</h1>
+          <small>QRIS Tracker</small>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="main-nav">
+        <a href="#" class="nav-link active" data-view="dashboard"><i class="ri-dashboard-line"></i> Beranda</a>
+        <a href="#" class="nav-link" data-view="mutasi"><i class="ri-exchange-line"></i> Mutasi</a>
+        <a href="#" class="nav-link" data-view="status-bca"><i class="ri-bank-line"></i> Status BCA</a>
+        <a href="#" class="nav-link" data-view="logs"><i class="ri-history-line"></i> Log Scraper</a>
+        <a href="#" class="nav-link" data-view="settings"><i class="ri-settings-3-line"></i> Pengaturan</a>
+        <a href="#" class="nav-link" data-view="api-settings"><i class="ri-terminal-box-line"></i> API Settings</a>
+        <a href="#" class="nav-link" data-view="api-docs"><i class="ri-file-code-line"></i> API Docs</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-avatar">
+            <i class="ri-user-3-line"></i>
+          </div>
+          <div class="admin-info">
+            <strong>Admin</strong>
+            <small>Administrator</small>
+          </div>
+        </div>
+        <button class="logout-btn" id="btn-logout"><i class="ri-logout-box-r-line"></i> Keluar</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="search-box">
+          <!-- Search -->
+        </div>
+        <div class="top-bar-actions">
+          <button class="icon-btn" id="theme-toggle"><i class="ri-sun-line"></i></button>
+          <button class="icon-btn" id="btn-notif"><i class="ri-notification-3-line"></i></button>
+        </div>
+      </header>
+
+      <div class="content-body">
+
+        <!-- View: Dashboard (Beranda) -->
+        <div id="view-dashboard" class="page-view active">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>Beranda</h2>
+              <small>Ringkasan keuangan & status sistem</small>
+            </div>
+            <button class="refresh-pill btn-refresh-data">
+              <i class="ri-refresh-line"></i> Refresh
+            </button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card income">
+              <div class="stat-header"><i class="ri-line-chart-line"></i> <small>Pemasukan Hari Ini</small></div>
+              <h3 id="pg-today-income">Rp 0</h3>
+            </div>
+            <div class="stat-card cut">
+              <div class="stat-header"><i class="ri-bar-chart-grouped-line"></i> <small>Potongan Hari Ini</small></div>
+              <h3 id="pg-today-cut">Rp 0</h3>
+            </div>
+            <div class="stat-card balance">
+              <div class="stat-header"><i class="ri-wallet-3-line"></i> <small>Saldo Bersih</small></div>
+              <h3 id="pg-net-balance">+Rp 0</h3>
+            </div>
+            <div class="stat-card total-trx">
+              <div class="stat-header"><i class="ri-exchange-funds-line"></i> <small>Total Transaksi</small></div>
+              <h3 id="pg-total-trx">0</h3>
+              <span class="sub-text">Hari ini: 0</span>
+            </div>
+          </div>
+
+          <div class="main-grid">
+            <div class="left-col">
+              <div class="card chart-card">
+                <h4>Transaksi 7 Hari Terakhir</h4>
+                <div class="chart-container"><canvas id="pgHistoryChart"></canvas></div>
+              </div>
+              <div class="card table-card">
+                <div class="card-header">
+                  <h4>Mutasi Terbaru</h4>
+                  <a href="#" class="view-all-mutasi">Lihat Semua →</a>
+                </div>
+                <div class="table-responsive">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Waktu</th>
+                        <th>Tipe</th>
+                        <th>Merchant</th>
+                        <th>Platform</th>
+                        <th>Jumlah</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pg-mutation-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <aside class="right-col">
+              <div class="card">
+                <h4>Platform Pembayaran</h4>
+                <div id="pg-platform-list" class="platform-list"></div>
+              </div>
+              <div class="card status-card">
+                <div class="card-header">
+                  <h4>Cloud Scraper</h4>
+                  <div class="status-dot-active" id="scraper-dot"></div>
+                </div>
+                <p class="status-text-active" id="scraper-status-text">Ready</p>
+                <div class="card-actions">
+                  <button class="btn btn-primary btn-sm" id="btn-cloud-scrape" style="width:100%">
+                    <i class="ri-cloud-line"></i> Run Cloud Scrape
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Scraper View (Hidden by default) -->
+              <div class="card" id="card-live-view" style="display: none; padding: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <h4 style="margin:0;">Live Scraper View</h4>
+                  <button class="btn btn-danger btn-sm" id="btn-close-live"><i class="ri-close-line"></i></button>
+                </div>
+                <div id="scraper-interaction-box"
+                  style="display: none; background: #1c1c1e; padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #333;">
+                  <p style="font-size: 0.85rem; color: #8E8E93; margin-bottom: 10px;">Layar di bawah hitam? Klik tombol
+                    ini supaya muncul di tab baru:</p>
+                  <a href="#" id="btn-open-debugger" target="_blank" class="badge"
+                    style="background: var(--primary-color); color: white; padding: 10px 20px; text-decoration: none; display: inline-block; border-radius: 6px; font-weight: bold;">
+                    <i class="ri-external-link-line"></i> BUKA LIVE VIEW (TAB BARU)
+                  </a>
+                </div>
+                <div id="scraper-iframe-container"
+                  style="width: 100%; height: 500px; border-radius: 8px; overflow: hidden; background: #000;">
+                  <!-- Browserless Debugger Iframe here -->
+                </div>
+                <small style="color: grey; margin-top: 10px; display: block;">Gunakan tampilan ini untuk input
+                  OTP/Verifikasi HP jika diminta.</small>
+              </div>
+              <div class="card">
+                <h4>Info Akun</h4>
+                <div id="pg-account-info" class="account-info-list"></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- View: Mutasi -->
+        <div id="view-mutasi" class="page-view">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>Daftar Mutasi</h2>
+              <small>Semua riwayat transaksi masuk dan keluar</small>
+            </div>
+            <button class="refresh-pill btn-refresh-data">
+              <i class="ri-refresh-line"></i> Refresh
+            </button>
+          </div>
+          <div class="card">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Waktu</th>
+                    <th>Tipe</th>
+                    <th>Merchant</th>
+                    <th>Platform</th>
+                    <th>Jumlah</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="pg-full-mutation-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- View: Status BCA -->
+        <div id="view-status-bca" class="page-view">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>Status Gateway</h2>
+              <small>Pemantauan koneksi dan akun bank</small>
+            </div>
+          </div>
+          <div class="main-grid" id="pg-gateway-details">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- View: Log Scraper -->
+        <div id="view-logs" class="page-view">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>Log Scraper</h2>
+              <small>Catatan aktivitas sistem scraping</small>
+            </div>
+          </div>
+          <div class="card log-container" id="log-list">
+            <!-- Log entries here -->
+          </div>
+        </div>
+
+        <!-- View: Pengaturan (Settings) -->
+        <div id="view-settings" class="page-view">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>Pengaturan Gateway</h2>
+              <small>Konfigurasi kredensial bank & e-wallet</small>
+            </div>
+          </div>
+          <div class="main-grid">
+            <div class="left-col">
+              <div class="card">
+                <h4>Update Kredensial</h4>
+                <form id="cred-form" class="admin-form">
+                  <div class="form-group">
+                    <label>Pilih Bank/Gateway</label>
+                    <select id="gateway-select">
+                      <option value="BCA">BCA (KlikBCA)</option>
+                      <option value="BNI">BNI (Mobile API)</option>
+                      <option value="BRI">BRI (BRILink)</option>
+                      <option value="MANDIRI">MANDIRI (Livin)</option>
+                      <option value="DANA">DANA Business</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Username / User ID</label>
+                    <input type="text" id="inp-username" placeholder="Masukkan User ID Bank" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Password / PIN</label>
+                    <input type="password" id="inp-password" placeholder="••••••" required>
+                  </div>
+                  <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                  <h4>Cloud Config (Browserless.io)</h4>
+                  <div class="form-group">
+                    <label>Browserless API Token</label>
+                    <input type="password" id="inp-browserless-token" placeholder="Masukkan Token Browserless.io">
+                    <small style="color: grey;">Dibutuhkan untuk menjalankan robot di Cloud.</small>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Simpan Kredensial</button>
+                </form>
+              </div>
+            </div>
+            <div class="right-col">
+              <div class="card">
+                <h4>Keamanan</h4>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px;">
+                  Semua kredensial disimpan menggunakan enkripsi AES-256 tingkat bank.
+                </p>
+                <ul style="padding-left: 20px; font-size: 0.85rem; color: var(--text-dim);">
+                  <li>Auto-logout jika tidak aktif</li>
+                  <li>Two-factor authentication (coming soon)</li>
+                  <li>Enkripsi end-to-end</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- View: API Settings -->
+        <div id="view-api-settings" class="page-view">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>API Configuration</h2>
+              <small>Integrasi sistem eksternal dengan NXPAY</small>
+            </div>
+          </div>
+          <div class="card">
+            <h4>Webhook Settings</h4>
+            <div class="form-group" style="margin-top:20px;">
+              <label>Callback URL</label>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" value="http://your-server.com/callback" readonly style="flex:1;">
+                <button class="btn btn-secondary">Copy</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Secret Key</label>
+              <div style="display: flex; gap: 10px;">
+                <input type="password" value="nx_secret_live_••••••••••••" readonly style="flex:1;">
+                <button class="btn btn-secondary">Regenerate</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- View: API Docs -->
+        <div id="view-api-docs" class="page-view">
+          <div class="page-header">
+            <div class="title-group">
+              <h2>API Documentation</h2>
+              <small>Panduan teknis integrasi NXPAY</small>
+            </div>
+          </div>
+          <div class="card doc-card">
+            <h5>POST /api/callback</h5>
+            <p>Kirim data mutasi dari scraper kustom lo ke dashboard ini.</p>
+            <div class="log-container" style="margin-top:10px;">
+              <code>{
+  "type": "MASUK",
+  "merchant": "Warung Makan Berkah",
+  "amount": 50000,
+  "platform": "BCA",
+  "raw_data": "{...}"
+}</code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/main.js?v=1.2"></script>
 </body>
 
 </html>

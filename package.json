@@ -6,6 +6,7 @@
   "main": "electron-main.js",
   "scripts": {
     "dev": "vite",
+    "server": "node dev-server.cjs",
     "build": "vite build",
     "preview": "vite preview",
     "electron:dev": "npm run build && electron .",
@@ -30,6 +31,9 @@
   "dependencies": {
     "@khmyznikov/pwa-install": "^0.6.1",
     "chart.js": "^4.5.1",
-    "pg": "^8.16.3"
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.16.3",
+    "puppeteer-core": "^21.0.0"
   }
 }

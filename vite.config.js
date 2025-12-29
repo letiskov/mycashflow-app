@@ -1,5 +1,14 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-    base: './', // Important for Electron to load assets from file system
+    base: './',
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                secure: false
+            }
+        }
+    }
 })

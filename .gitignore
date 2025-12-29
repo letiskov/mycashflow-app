@@ -39,3 +39,5 @@ Thumbs.db
 *.exe
 cloudflared.exe
 *.zip
+
+.vercel
