@@ -155,7 +155,7 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
         if (isMyBCA) {
-            sendProgress('Robot mulai operasional (V2.0 - Anti Stuck)...');
+            sendProgress('Robot mulai operasional (V3.0 - Enter Key)...');
 
             await pool.query("UPDATE gateways SET pending_otp = NULL WHERE platform = 'BCA'");
 
@@ -194,55 +194,51 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
                     }
                 }
 
-                // JEDA MIKIR (Seolah Bang Aldhi lagi ngecek ketikan bener apa nggak)
+                // JEDA MIKIR
                 sendProgress('Robot sedang berhenti sejenak (Thinking Pause)...');
-                await new Promise(r => setTimeout(r, 2500 + Math.random() * 2000));
+                await new Promise(r => setTimeout(r, 2000));
 
-                // Klik Masuk (Cari posisi dan gerakkan mouse ke sana)
-                const btnPos = await page.evaluate(() => {
-                    const btn = Array.from(document.querySelectorAll('button')).find(b =>
-                        b.innerText.toLowerCase().includes('masuk') || b.textContent.toLowerCase().includes('masuk')
-                    );
-                    if (btn) {
-                        btn.scrollIntoView({ behavior: 'smooth' });
-                        const rect = btn.getBoundingClientRect();
-                        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-                    }
-                    return null;
-                });
+                // TEKAN ENTER (Lebih reliable daripada klik)
+                sendProgress('Menekan tombol ENTER...');
+                await page.keyboard.press('Enter');
 
-                if (btnPos) {
-                    await page.mouse.move(btnPos.x, btnPos.y, { steps: 12 });
-                    await page.mouse.down();
-                    await new Promise(r => setTimeout(r, 120));
-                    await page.mouse.up();
-                }
-
-                sendProgress('Login terkirim... Mengecek respon MyBCA...');
                 await new Promise(r => setTimeout(r, 5000));
 
-                // == ERROR CHECK: Invalid Credentials? ==
-                const errorMsg = await page.evaluate(() => {
-                    const err = document.querySelector('.toast-message, .alert-danger, .error-text');
-                    return err ? err.innerText : null;
-                });
-
-                if (errorMsg) {
-                    throw new Error(`Gagal Login: ${errorMsg}. Cek User ID / Password lo Bang!`);
+                // == ERROR CHECK: Invalid Credentials / Blocked? ==
+                const pageText = await page.evaluate(() => document.body.innerText);
+                // Cek keyword error umum
+                if (pageText.includes('Salah User ID') || pageText.includes('salah') || pageText.includes('tidak sesuai')) {
+                    // Ambil potongan teks error biar user tau
+                    const errMsg = pageText.split('\n').find(l => l.includes('salah') || l.includes('tidak sesuai')) || 'Admin login failed';
+                    throw new Error(`Gagal Login: ${errMsg}`);
                 }
 
-                // == STUCK CHECK: Masih di halaman login? ==
+                // == STUCK CHECK ==
                 const url = await page.url();
                 if (url.includes('login')) {
-                    sendProgress('Klik pertama meleset, mencoba tendangan maut (Force Click)...');
-                    // Force click via JS
-                    await page.evaluate(() => {
+                    sendProgress('Masih di halaman login, mencoba klik tombol manual...');
+                    // Fallback Click Button
+                    const btnPos = await page.evaluate(() => {
                         const btn = Array.from(document.querySelectorAll('button')).find(b =>
                             b.innerText.toLowerCase().includes('masuk') || b.textContent.toLowerCase().includes('masuk')
                         );
-                        if (btn) btn.click();
+                        if (btn) {
+                            const rect = btn.getBoundingClientRect();
+                            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+                        }
+                        return null;
                     });
+
+                    if (btnPos) {
+                        await page.mouse.click(btnPos.x, btnPos.y);
+                    }
                     await new Promise(r => setTimeout(r, 5000));
+                }
+
+                // DEBUG: Kalau masih stuck, kasih tau user ada tulisan apa di layar
+                if ((await page.url()).includes('login')) {
+                    const debugText = (await page.evaluate(() => document.body.innerText)).substring(0, 100).replace(/\n/g, ' ');
+                    sendProgress(`⚠️ STUCK DI LOGIN. Layar menampilkan: "${debugText}..."`);
                 }
 
                 sendProgress('Menunggu OTP masuk ke Email...');
