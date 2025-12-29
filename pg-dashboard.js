@@ -212,8 +212,20 @@ export const PGDashboard = {
         if (document.getElementById('pg-today-income')) {
             document.getElementById('pg-today-income').textContent = this.fmt(summary.pemasukan);
             document.getElementById('pg-today-cut').textContent = this.fmt(summary.pengeluaran);
-            document.getElementById('pg-net-balance').textContent =
-                (summary.pemasukan - summary.pengeluaran >= 0 ? '+' : '') + this.fmt(summary.pemasukan - summary.pengeluaran);
+
+            // BALANCE: Prioritize scraped BCA Balance if available
+            const bcaGateway = gateways.find(g => g.platform === 'BCA');
+            if (bcaGateway && bcaGateway.balance) {
+                document.getElementById('pg-net-balance').textContent = this.fmt(bcaGateway.balance);
+                // Tambahin icon kecil atau label biar tau ini Saldo Real
+                if (document.getElementById('pg-net-balance').previousElementSibling) {
+                    document.getElementById('pg-net-balance').previousElementSibling.innerHTML = '<i class="ri-wallet-3-line"></i> <small>Saldo Real BCA</small>';
+                }
+            } else {
+                // Fallback to manual calc
+                document.getElementById('pg-net-balance').textContent =
+                    (summary.pemasukan - summary.pengeluaran >= 0 ? '+' : '') + this.fmt(summary.pemasukan - summary.pengeluaran);
+            }
         }
 
         const totalTrxEl = document.getElementById('pg-total-trx');

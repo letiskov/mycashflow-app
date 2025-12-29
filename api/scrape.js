@@ -245,11 +245,64 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
                 await pool.query("UPDATE gateways SET pending_otp = NULL WHERE platform = 'BCA'");
             }
 
-            // Tunggu sampe masuk dashboard (ada menu atau link)
-            sendProgress('Login berhasil! Navigasi ke halaman Activity...');
-            await new Promise(r => setTimeout(r, 3000));
+            // Tunggu sampe masuk dashboard
+            sendProgress('Login berhasil! Sedang mencari informasi saldo...');
+            await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 30000 }).catch(() => { });
+            await new Promise(r => setTimeout(r, 4000)); // Tunggu rendering home selesai
 
-            // Langsung ke halaman Activity/Mutasi
+            // == LOGIC DELETE SALDO (BALANCE) ==
+            try {
+                const balance = await page.evaluate(async () => {
+                    // Coba cari tombol/icon mata buat unmask saldo
+                    const eyeIcons = Array.from(document.querySelectorAll('i, button, span, div'));
+                    const eyeBtn = eyeIcons.find(el => {
+                        const classes = (el.className || '').toString();
+                        // Cari class umum untuk "Show/Hide" password/balance
+                        return classes.includes('eye') || classes.includes('visibility') || classes.includes('show');
+                    });
+
+                    if (eyeBtn) {
+                        eyeBtn.click();
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
+
+                    // Cari teks saldo (IDR xxx)
+                    const bodyText = document.body.innerText;
+                    // Format MyBCA: "IDR 15,000,000.00"
+                    const balanceMatch = bodyText.match(/IDR\s*([\d,\.]+)/);
+
+                    if (balanceMatch) {
+                        const raw = balanceMatch[1];
+                        // Parse US format (koma = ribuan, titik = desimal)
+                        if (raw.includes(',') && raw.includes('.')) {
+                            return parseFloat(raw.replace(/,/g, '')) || 0;
+                        }
+                        // Parse Indo format (titik = ribuan, koma = desimal)
+                        if (raw.includes('.') && !raw.includes(',')) {
+                            return parseFloat(raw.replace(/\./g, '')) || 0;
+                        }
+                        if (raw.includes(',') && !raw.includes('.')) {
+                            return parseFloat(raw.replace(/,/g, '.')) || 0;
+                        }
+                        return parseFloat(raw.replace(/,/g, '')) || 0;
+                    }
+                    return null;
+                });
+
+                if (balance !== null) {
+                    console.log(`[MyBCA] Balance found: Rp ${balance}`);
+                    sendProgress(`Saldo terdeteksi: Rp ${balance.toLocaleString('id-ID')}`);
+                    // Save to DB
+                    await pool.query("UPDATE gateways SET balance = $1, last_updated = NOW(), status = 'CONNECTED' WHERE platform = 'BCA'", [balance]);
+                } else {
+                    console.log('[MyBCA] Balance not found on dashboard');
+                }
+            } catch (err) {
+                console.error('Gagal scrape saldo:', err);
+            }
+
+            // Navigasi ke halaman Activity/Mutasi
+            sendProgress('Mengambil data mutasi...');
             await page.goto('https://mybca.bca.co.id/activity', { waitUntil: 'networkidle2', timeout: 30000 });
 
             // Tunggu transaksi muncul (card-based)
