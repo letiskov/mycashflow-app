@@ -155,7 +155,7 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
         if (isMyBCA) {
-            sendProgress('Robot mulai operasional (Mode Manusia)...');
+            sendProgress('Robot mulai operasional (V2.0 - Anti Stuck)...');
 
             await pool.query("UPDATE gateways SET pending_otp = NULL WHERE platform = 'BCA'");
 
