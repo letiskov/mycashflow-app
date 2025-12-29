@@ -218,18 +218,45 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
                     await page.mouse.up();
                 }
 
-                sendProgress('Login terkirim. Menunggu sistem MyBCA memicu OTP...');
+                sendProgress('Login terkirim... Mengecek respon MyBCA...');
+                await new Promise(r => setTimeout(r, 5000));
+
+                // == ERROR CHECK: Invalid Credentials? ==
+                const errorMsg = await page.evaluate(() => {
+                    const err = document.querySelector('.toast-message, .alert-danger, .error-text');
+                    return err ? err.innerText : null;
+                });
+
+                if (errorMsg) {
+                    throw new Error(`Gagal Login: ${errorMsg}. Cek User ID / Password lo Bang!`);
+                }
+
+                // == STUCK CHECK: Masih di halaman login? ==
+                const url = await page.url();
+                if (url.includes('login')) {
+                    sendProgress('Klik pertama meleset, mencoba tendangan maut (Force Click)...');
+                    // Force click via JS
+                    await page.evaluate(() => {
+                        const btn = Array.from(document.querySelectorAll('button')).find(b =>
+                            b.innerText.toLowerCase().includes('masuk') || b.textContent.toLowerCase().includes('masuk')
+                        );
+                        if (btn) btn.click();
+                    });
+                    await new Promise(r => setTimeout(r, 5000));
+                }
+
+                sendProgress('Menunggu OTP masuk ke Email...');
                 try {
                     await page.waitForSelector('input[name*="otp"], .otp-input', { timeout: 45000 });
-                    sendProgress('HALAMAN OTP MUNCUL! Email harusnya terkirim sekarang.');
+                    sendProgress('Input OTP terdeteksi! Email harusnya sudah masuk.');
                 } catch (e) {
-                    console.log('[MyBCA] OTP screen detection timeout, proceeding to poll...');
+                    console.log('[MyBCA] OTP selector timeout, lanjut polling DB siapa tau user lagi input...');
                 }
 
                 let otpCode = null;
                 const startTime = Date.now();
                 while (!otpCode && (Date.now() - startTime < 120000)) {
-                    sendProgress(`Menunggu Bang Aldhi input OTP... (${Math.round((120000 - (Date.now() - startTime)) / 1000)}s sisa)`);
+                    sendProgress(`Menunggu input OTP... (${Math.round((120000 - (Date.now() - startTime)) / 1000)}s)`);
                     const qr = await pool.query("SELECT pending_otp FROM gateways WHERE platform = 'BCA'");
                     otpCode = qr.rows[0]?.pending_otp;
                     if (!otpCode) await new Promise(r => setTimeout(r, 4000));
@@ -243,6 +270,7 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
                     if (input) {
                         input.value = code;
                         input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                     const btn = Array.from(document.querySelectorAll('button')).find(b =>
                         b.innerText.toLowerCase().includes('lanjut') || b.textContent.toLowerCase().includes('lanjut') || b.innerText.toLowerCase().includes('verifikasi')
