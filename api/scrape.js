@@ -91,11 +91,18 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
     const sendProgress = (msg) => {
         try { res.write(JSON.stringify({ progress: msg }) + "\n"); } catch (e) { }
     };
+
+    sendProgress('Menyiapkan koneksi ke Browserless...');
+
     const { username, password } = gateway.account_info;
+
     const browser = await puppeteer.connect({
         browserWSEndpoint: wsEndpoint,
-        defaultViewport: null
+        defaultViewport: null,
+        timeout: 30000 // Timeout 30 detik biar gak hang
     });
+
+    sendProgress('Terhubung! Membuka Tab Baru...');
     const page = await browser.newPage();
 
     try {
