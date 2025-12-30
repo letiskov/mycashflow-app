@@ -30,12 +30,18 @@ export default async function handler(req, res) {
     }, 4000);
 
     try {
+        // TRACE LOG 1: Start
+        res.write(JSON.stringify({ progress: 'System Init: Menghubungkan ke Database...' }) + "\n");
+
         const result = await client.query("SELECT * FROM gateways WHERE platform = $1 AND status = 'active'", [platform]);
         if (result.rows.length === 0) {
             clearInterval(keepAlive);
-            res.write(JSON.stringify({ error: 'No active gateway' }));
+            res.write(JSON.stringify({ error: 'No active gateway found for ' + platform }));
             return res.end();
         }
+
+        // TRACE LOG 2: Gateway Found
+        res.write(JSON.stringify({ progress: 'Akun ditemukan. Mengambil kunci rahasia...' }) + "\n");
 
         const gateway = result.rows[0];
 
@@ -45,6 +51,11 @@ export default async function handler(req, res) {
         gateway.account_info.password = pass;
 
         const sessionId = reqSessionId || Buffer.from(Date.now().toString()).toString('hex');
+
+        // TRACE LOG 3: Token Info
+        const token = req.body.browserlessToken || process.env.BROWSERLESS_TOKEN;
+        res.write(JSON.stringify({ progress: `Menyiapkan Browserless (Token: ${token ? '...' + token.substr(-5) : 'KOSONG'})...` }) + "\n");
+
         const browserWSEndpoint = `wss://chrome.browserless.io?token=${token}&--window-size=1366,768&trackingId=${sessionId}&stealth&site-unblocking=true`;
 
         // 2. Execute Scraper Logic
