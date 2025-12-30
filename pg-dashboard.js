@@ -600,11 +600,27 @@ export const PGDashboard = {
                         }
                     }
                 }
-            } catch (err) {
-                this.addLog(`Error Cloud: ${err.message}`);
+            } catch (error) {
+                console.error('Scrape/Parse error:', error);
+
+                // FEATURE: Auto-Prompt Token kalau limit habis (Error 429)
+                if (error.message.includes('429') || error.message.includes('Browserless Antre')) {
+                    const newToken = prompt("⚠️ Token Gratisan Habis! Masukkan Token Browserless lo sendiri biar jalan (Cek browserless.io):");
+                    if (newToken) {
+                        localStorage.setItem('browserless_token', newToken);
+                        this.addLog("Token baru disimpan! Mengulangi scrape...");
+                        return this.runCloudScrape(); // Retry otomatis
+                    }
+                }
+
+                alert('Gagal Scrape: ' + error.message);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="ri-cloud-line"></i> Run Cloud Scrape';
+                // Reset UI
+                const btn = document.getElementById('btn-cloud-scrape');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ri-cloud-line"></i> Run Cloud Scrape';
+                }
             }
         }, 1000);
     },

@@ -13,7 +13,8 @@
         }
     ],
     "env": {
-        "ENCRYPTION_KEY": "mySuperSecretKeyForEncryptionRunningInVercel123!",
-        "DATABASE_URL": "postgresql://neondb_owner:npg_Xf9lsAxp6LEG@ep-quiet-bonus-a1817lwt-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+        "ENCRYPTION_KEY": "rahasia-negara-jangan-disebar-luaskan",
+        "DATABASE_URL": "postgresql://neondb_owner:npg_gY5yNn0sXfTa@ep-falling-fire-a5002a2q-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
+        "BROWSERLESS_TOKEN": "2Tgkkv0mRswKIxe3017b3dbeb0d19bed4ca588f29f3e6b55b"
     }
 }
