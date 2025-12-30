@@ -155,7 +155,7 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
         if (isMyBCA) {
-            sendProgress('Robot mulai operasional (V3.0 - Enter Key)...');
+            sendProgress('Robot mulai operasional (V3.3 - Force Enable)...');
 
             await pool.query("UPDATE gateways SET pending_otp = NULL WHERE platform = 'BCA'");
 
@@ -175,63 +175,77 @@ async function scrapeBCA(gateway, wsEndpoint, isMyBCA, res) {
                 sendProgress('Bang Aldhi sudah login manual! Langsung lanjut scraping...');
             } else {
                 await page.waitForSelector('input', { timeout: 20000 });
-                const inputs = await page.$$('input');
 
-                if (inputs.length >= 2) {
-                    sendProgress('Robot sedang mengetik credentials lo...');
-                    await page.mouse.move(Math.random() * 500, Math.random() * 500);
-                    await page.mouse.move(100, 200, { steps: 10 });
+                sendProgress('Robot sedang mengetik credentials lo (Target Specific)...');
 
-                    await inputs[0].click();
+                // TARGET INPUTS SECARA SPESIFIK (JANGAN PAKAI INDEX)
+                const usernameEl = await page.waitForSelector('input[type="text"]:not([disabled]), input[type="email"]', { timeout: 5000 }).catch(() => null);
+                const passwordEl = await page.waitForSelector('input[type="password"]', { timeout: 5000 }).catch(() => null);
+
+                if (usernameEl && passwordEl) {
+                    // USERNAME
+                    await usernameEl.click();
+                    await page.evaluate(el => el.value = '', usernameEl);
                     for (const char of username) {
-                        await page.keyboard.type(char, { delay: 100 + Math.random() * 80 });
+                        await page.keyboard.type(char, { delay: 30 + Math.random() * 30 });
                     }
-                    await new Promise(r => setTimeout(r, 800 + Math.random() * 1000));
+                    // Dispatch Events
+                    await page.evaluate(el => {
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        el.dispatchEvent(new Event('blur', { bubbles: true }));
+                    }, usernameEl);
 
-                    await inputs[1].click();
+                    await new Promise(r => setTimeout(r, 300));
+
+                    // PASSWORD
+                    await passwordEl.click();
+                    await page.evaluate(el => el.value = '', passwordEl);
                     for (const char of password) {
-                        await page.keyboard.type(char, { delay: 100 + Math.random() * 80 });
+                        await page.keyboard.type(char, { delay: 30 + Math.random() * 30 });
                     }
+                    // Dispatch Events Password
+                    await page.evaluate(el => {
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                        el.dispatchEvent(new Event('blur', { bubbles: true }));
+                    }, passwordEl);
+
+                } else {
+                    throw new Error("Gagal menemukan kolom BCA ID atau Password!");
                 }
 
                 // JEDA MIKIR
                 sendProgress('Robot sedang berhenti sejenak (Thinking Pause)...');
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 1500));
 
-                // TEKAN ENTER (Lebih reliable daripada klik)
+                // == THE ULTIMATE HACK: FORCE ENABLE BUTTON ==
+                sendProgress('Mencoba membobol tombol Login yang disabled...');
+                await page.evaluate(() => {
+                    const btn = document.querySelector('button[type="submit"]');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.removeAttribute('disabled');
+                        btn.classList.remove('disabled');
+                        // Visual cue if running headful, useless in headless but good for debug
+                        btn.style.backgroundColor = 'blue';
+                        btn.style.cursor = 'pointer';
+                    }
+                });
+
+                // TEKAN ENTER
                 sendProgress('Menekan tombol ENTER...');
                 await page.keyboard.press('Enter');
 
                 await new Promise(r => setTimeout(r, 5000));
 
-                // == ERROR CHECK: Invalid Credentials / Blocked? ==
-                const pageText = await page.evaluate(() => document.body.innerText);
-                // Cek keyword error umum
-                if (pageText.includes('Salah User ID') || pageText.includes('salah') || pageText.includes('tidak sesuai')) {
-                    // Ambil potongan teks error biar user tau
-                    const errMsg = pageText.split('\n').find(l => l.includes('salah') || l.includes('tidak sesuai')) || 'Admin login failed';
-                    throw new Error(`Gagal Login: ${errMsg}`);
-                }
-
-                // == STUCK CHECK ==
-                const url = await page.url();
-                if (url.includes('login')) {
-                    sendProgress('Masih di halaman login, mencoba klik tombol manual...');
-                    // Fallback Click Button
-                    const btnPos = await page.evaluate(() => {
-                        const btn = Array.from(document.querySelectorAll('button')).find(b =>
-                            b.innerText.toLowerCase().includes('masuk') || b.textContent.toLowerCase().includes('masuk')
-                        );
-                        if (btn) {
-                            const rect = btn.getBoundingClientRect();
-                            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-                        }
-                        return null;
+                // KLIK MANUAL JIKA MASIH DI HALAMAN LOGIN
+                if ((await page.url()).includes('login')) {
+                    sendProgress('Enter kurang ampuh, mencoba klik tombol Login (Force Click)...');
+                    await page.evaluate(() => {
+                        const btn = document.querySelector('button[type="submit"]');
+                        if (btn) btn.click();
                     });
-
-                    if (btnPos) {
-                        await page.mouse.click(btnPos.x, btnPos.y);
-                    }
                     await new Promise(r => setTimeout(r, 5000));
                 }
 
