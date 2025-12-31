@@ -3,7 +3,7 @@ import path from 'path';
 import puppeteer from 'puppeteer-core';
 import { decrypt } from './security.js';
 
-const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_Xf9lsAxp6LEG@ep-quiet-bonus-a1817lwt-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require";
+const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_gY5yNn0sXfTa@ep-falling-fire-a5002a2q-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require";
 const pool = new Pool({ connectionString });
 
 // BROWSERLESS_TOKEN can be passed in query or env
@@ -17,12 +17,28 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Browserless Token is required' });
     }
 
-    // 1. Get Gateway Credentials from DB
-    const client = await pool.connect();
-
-    // Set headers for streaming (Keep-alive)
+    // 0. SET HEADERS IMMEDIATELY (Biar gak bengong)
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Transfer-Encoding', 'chunked');
+
+    // HELLO PACKET
+    try {
+        res.write(JSON.stringify({ progress: 'Server: Request diterima. Memulai proses...' }) + "\n");
+    } catch (e) {
+        // Ignore if write fails (client disconnected)
+        return;
+    }
+
+    // 1. Get Gateway Credentials from DB
+    let client;
+    try {
+        res.write(JSON.stringify({ progress: 'Menghubungkan ke Database (NeonDB)...' }) + "\n");
+        client = await pool.connect();
+    } catch (err) {
+        console.error("DB Connection Error:", err);
+        res.write(JSON.stringify({ error: 'Gagal konek Database: ' + err.message }));
+        return res.end();
+    }
 
     // Timer untuk cegah timeout Vercel (kirim heartbeat tiap 4 detik)
     const keepAlive = setInterval(() => {
